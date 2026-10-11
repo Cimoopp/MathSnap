@@ -1,10 +1,13 @@
 name: Train OCR model
 
 # Обучение своей модели распознавания символов в облаке.
-# Запуск вручную: Actions → Train OCR model → Run workflow.
+# Запуск: любой push в train/, ocr/, data/ или этот файл,
+# либо вручную — Actions → Train OCR model → Run workflow.
 #
-# ВАЖНО: авто-запуск по push включён. Ускоряющий режим обучения:
-# вход 32x32, до 500 примеров на класс, кэш подготовленных картинок.
+# Режим обучения: вход 32x32, до 500 примеров на класс, готовые картинки
+# кэшируются в data/cache. Лимит джобы 355 минут — с запасом под 6 часов
+# бесплатного ранера GitHub; на практике обучение закрывается раньше
+# за счёт EarlyStopping.
 
 on:
   workflow_dispatch:
@@ -13,6 +16,12 @@ on:
         description: "Сколько эпох обучать"
         required: false
         default: "60"
+  push:
+    paths:
+      - "train/**"
+      - "ocr/**"
+      - "data/**"
+      - ".github/workflows/train.yml"
 
 jobs:
   train:
