@@ -6,7 +6,7 @@
 Запуск локально:
     pip install "tensorflow-cpu==2.15.1" pillow numpy
     python data/download_data.py --out data/hasy
-    python train/train.py --epochs 30
+    python train/train.py --epochs 60
 В облаке это делает .github/workflows/train.yml
 """
 
@@ -44,7 +44,20 @@ LATEX_MAP = {
     "l": "l", "g": "g",
 }
 
+# Имена колонок с меткой и с номером картинки в разных выгрузках датасета
+ID_KEYS = ("image_id", "id", "imageId")
+LATEX_KEYS = ("latex", "label", "symbol")
+
 IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".webp", ".bmp")
+
+
+def first_value(row: dict, keys) -> str:
+    """Возвращает первое непустое значение из строки таблицы по списку имён колонок."""
+    for key in keys:
+        value = row.get(key)
+        if value is not None and str(value).strip() != "":
+            return str(value).strip()
+    return ""
 
 
 def latex_to_class(latex: str) -> str | None:
@@ -105,13 +118,16 @@ def load_hasy(csv_path: Path, base: Path, per_class_cap: int):
 
     with open(csv_path, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
-            symbol = latex_to_class(row.get("latex", ""))
+            # В HASYv2 колонка с номером картинки называется image_id,
+            # но встречаются выгрузки с id/imageId — берём любую из них.
+            raw_id = first_value(row, ID_KEYS)
+
+            symbol = latex_to_class(first_value(row, LATEX_KEYS))
             if symbol is None:
                 continue
             if per_class.get(symbol, 0) >= per_class_cap:
                 continue
 
-            raw_id = (row.get("id") or "").strip()
             path = images.get(int(raw_id)) if raw_id.isdigit() else None
             if path is None:
                 continue
@@ -215,7 +231,7 @@ def export_tflite(model, out_path: Path) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Обучение модели распознавания MathSnap")
     parser.add_argument("--data", default="data", help="папка с данными")
-    parser.add_argument("--epochs", type=int, default=30)
+    parser.add_argument("--epochs", type=int, default=60)
     parser.add_argument("--batch", type=int, default=128)
     parser.add_argument("--per-class-cap", type=int, default=2500,
                         help="предел примеров на класс — чтобы частые символы не перевесили")
@@ -236,6 +252,11 @@ def main() -> int:
     x_hasy, y_hasy, per_class = load_hasy(csv_files[0], csv_files[0].parent,
                                           args.per_class_cap)
     print(f"[i] Из датасета взято {len(x_hasy)} символов")
+
+    if len(x_hasy) == 0:
+        print("[X] Ни один символ не сопоставился с метками.")
+        print("    Проверь названия колонок в таблице и распаковку картинок.")
+        return 1
 
     x_mine, y_mine = load_handwritten(data_dir / "handwritten")
 
@@ -275,10 +296,10 @@ def main() -> int:
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(str(checkpoint), monitor="val_accuracy",
                                            save_best_only=True, verbose=1),
-        tf.keras.callbacks.EarlyStopping(monitor="val_accuracy", patience=6,
+        tf.keras.callbacks.EarlyStopping(monitor="val_accuracy", patience=8,
                                          restore_best_weights=True, verbose=1),
         tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5,
-                                             patience=3, min_lr=1e-5, verbose=1),
+                                             patience=4, min_lr=1e-5, verbose=1),
     ]
 
     history = model.fit(train_ds, validation_data=val_ds, epochs=args.epochs,
