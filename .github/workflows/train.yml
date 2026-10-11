@@ -1,7 +1,8 @@
 name: Train OCR model
 
 # Обучение своей модели распознавания символов в облаке.
-# Запуск вручную: Actions → Train OCR model → Run workflow.
+# Запуск: любой push в train/, ocr/, data/ или этот файл,
+# либо вручную — Actions → Train OCR model → Run workflow.
 
 on:
   workflow_dispatch:
@@ -9,7 +10,7 @@ on:
       epochs:
         description: "Сколько эпох обучать"
         required: false
-        default: "30"
+        default: "60"
   push:
     paths:
       - "train/**"
@@ -49,7 +50,7 @@ jobs:
         run: |
           python train/train.py \
             --data data \
-            --epochs ${{ github.event.inputs.epochs || 30 }} \
+            --epochs ${{ github.event.inputs.epochs || 60 }} \
             --out assets/model.tflite \
             --report-dir train/out
 
