@@ -3,6 +3,10 @@
 Данные: HASYv2 (реальные рукописные символы) + свои фото из data/handwritten/.
 Выход: assets/model.tflite (лежит внутри APK) и отчёт с метриками.
 
+Режим подобран под бесплатный ранер GitHub (2 ядра):
+вход 32x32, до 500 примеров на класс, подготовленные картинки кэшируются
+в data/cache, чтобы повторный прогон не тратил время на препроцессинг.
+
 Запуск локально:
     pip install "tensorflow-cpu==2.15.1" pillow numpy
     python data/download_data.py --out data/hasy
@@ -15,6 +19,7 @@ import csv
 import json
 import re
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -30,7 +35,7 @@ from ocr.labels import (  # noqa: E402
     HUMAN_NAMES,
     IMG_SIZE,
 )
-from ocr.model import augment_layers, build_model  # noqa: E402
+from ocr.model import build_model  # noqa: E402
 
 # Как метки LaTeX из HASYv2 переводятся в наши классы.
 # Всё, чего здесь нет, при обучении отбрасывается.
@@ -66,7 +71,7 @@ def latex_to_class(latex: str) -> str | None:
     return LATEX_MAP.get(key)
 
 
-def load_glyph(path: Path, size: int = IMG_SIZE, inner: int = 48) -> np.ndarray | None:
+def load_glyph(path: Path, size: int = IMG_SIZE) -> np.ndarray | None:
     """Готовит одно изображение символа к подаче в сеть.
 
     Шаги: оттенки серого -> бинаризация -> обрезка по границам символа ->
@@ -74,6 +79,9 @@ def load_glyph(path: Path, size: int = IMG_SIZE, inner: int = 48) -> np.ndarray 
     (символ белым по чёрному) -> нормализация 0..1.
     Ровно тот же вид должен получаться в приложении после съёмки камерой.
     """
+    # Символ занимает 3/4 кадра: так у сети остаётся запас на неточную обрезку
+    inner = max(16, int(size * 0.75))
+
     image = Image.open(path).convert("L")
     arr = np.asarray(image)
 
@@ -149,6 +157,29 @@ def load_hasy(csv_path: Path, base: Path, per_class_cap: int):
     return x, y, per_class
 
 
+def load_hasy_cached(csv_path: Path, base: Path, per_class_cap: int, cache_path: Path):
+    """То же, что load_hasy, но с кэшем на диск: препроцессинг идёт один раз."""
+    if cache_path.exists():
+        try:
+            packed = np.load(cache_path, allow_pickle=False)
+            x = packed["x"]
+            y = packed["y"]
+            per_class = json.loads(str(packed["per_class"]))
+            print(f"[i] Готовые символы из кэша: {len(x)} штук ({cache_path.name})")
+            return x, y, per_class
+        except Exception as error:  # noqa: BLE001 — кэш не критичен, готовим заново
+            print(f"[!] Кэш не прочитался ({error}) — готовлю символы заново")
+
+    x, y, per_class = load_hasy(csv_path, base, per_class_cap)
+
+    if len(x):
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        np.savez_compressed(cache_path, x=x, y=y,
+                            per_class=np.asarray(json.dumps(per_class)))
+        print(f"[i] Символы сохранены в кэш: {cache_path}")
+    return x, y, per_class
+
+
 def load_handwritten(root: Path):
     """Свои фото: папка на каждый класс, имя папки = класс из ocr/labels.py."""
     features, labels = [], []
@@ -183,21 +214,26 @@ def load_handwritten(root: Path):
 
 
 def make_dataset(x, y, batch_size: int, training: bool, seed: int = 1):
-    """tf.data-пайплайн. При обучении картинки слегка искажаются."""
+    """tf.data-пайплайн.
+
+    Аугментация сделана на дешёвых операциях tf.image (яркость, контраст,
+    сдвиг на пару пикселей) — на процессоре это в разы быстрее, чем
+    поворот и масштабирование слоями Keras при том же эффекте.
+    """
     dataset = tf.data.Dataset.from_tensor_slices((x, y))
 
     if training:
-        dataset = dataset.shuffle(min(len(x), 30000), seed=seed, reshuffle_each_iteration=True)
-        layers = augment_layers()
+        dataset = dataset.shuffle(min(len(x), 20000), seed=seed,
+                                  reshuffle_each_iteration=True)
 
         def augment(image, label):
-            image = tf.image.random_brightness(image[..., tf.newaxis], 0.10)
+            image = image[..., tf.newaxis]
+            image = tf.image.random_brightness(image, max_delta=0.10)
             image = tf.image.random_contrast(image, 0.85, 1.15)
             image = tf.clip_by_value(image, 0.0, 1.0)
-            for layer in layers:
-                image = layer(image, training=True)
-            # случайный сдвиг на несколько пикселей
-            image = tf.pad(image, [[5, 5], [5, 5], [0, 0]], constant_values=0.0)
+            shift = max(2, IMG_SIZE // 8)
+            image = tf.pad(image, [[shift, shift], [shift, shift], [0, 0]],
+                           constant_values=0.0)
             image = tf.image.random_crop(image, [IMG_SIZE, IMG_SIZE, 1])
             return tf.squeeze(image, -1), label
 
@@ -233,11 +269,15 @@ def main() -> int:
     parser.add_argument("--data", default="data", help="папка с данными")
     parser.add_argument("--epochs", type=int, default=60)
     parser.add_argument("--batch", type=int, default=128)
-    parser.add_argument("--per-class-cap", type=int, default=2500,
+    parser.add_argument("--per-class-cap", type=int, default=500,
                         help="предел примеров на класс — чтобы частые символы не перевесили")
     parser.add_argument("--out", default="assets/model.tflite")
     parser.add_argument("--report-dir", default="train/out")
+    parser.add_argument("--no-cache", action="store_true",
+                        help="игнорировать кэш подготовленных картинок")
     args = parser.parse_args()
+
+    tf.keras.utils.set_random_seed(42)
 
     data_dir = Path(args.data)
     hasy_dir = data_dir / "hasy"
@@ -249,8 +289,12 @@ def main() -> int:
         return 1
 
     print(f"Читаю датасет: {csv_files[0]}")
-    x_hasy, y_hasy, per_class = load_hasy(csv_files[0], csv_files[0].parent,
-                                          args.per_class_cap)
+    cache_path = data_dir / "cache" / f"glyphs_{IMG_SIZE}_{args.per_class_cap}.npz"
+    if args.no_cache and cache_path.exists():
+        cache_path.unlink()
+
+    x_hasy, y_hasy, per_class = load_hasy_cached(
+        csv_files[0], csv_files[0].parent, args.per_class_cap, cache_path)
     print(f"[i] Из датасета взято {len(x_hasy)} символов")
 
     if len(x_hasy) == 0:
@@ -272,8 +316,10 @@ def main() -> int:
     train_idx, val_idx, test_idx = split_indices(n_dataset)
     train_idx = np.concatenate([train_idx, np.arange(n_dataset, n_dataset + len(x_mine))])
 
+    steps_per_epoch = max(1, len(train_idx) // args.batch)
     print(f"[i] Всего символов: {len(x)} → обучение {len(train_idx)}, "
           f"проверка {len(val_idx)}, тест {len(test_idx)}")
+    print(f"[i] Шагов на эпоху: {steps_per_epoch} (батч {args.batch}, вход {IMG_SIZE}x{IMG_SIZE})")
 
     # Редкие классы предупреждаем отдельно: они обычно и «плывут» на фото
     for symbol in CLASSES:
@@ -287,7 +333,7 @@ def main() -> int:
     val_ds = make_dataset(x[val_idx], y[val_idx], args.batch, training=False)
 
     model = build_model()
-    model.summary()
+    print(f"[i] Параметров в модели: {model.count_params()}")
 
     report_dir = Path(args.report_dir)
     report_dir.mkdir(parents=True, exist_ok=True)
@@ -296,19 +342,22 @@ def main() -> int:
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(str(checkpoint), monitor="val_accuracy",
                                            save_best_only=True, verbose=1),
-        tf.keras.callbacks.EarlyStopping(monitor="val_accuracy", patience=8,
+        tf.keras.callbacks.EarlyStopping(monitor="val_accuracy", patience=6,
                                          restore_best_weights=True, verbose=1),
         tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5,
-                                             patience=4, min_lr=1e-5, verbose=1),
+                                             patience=3, min_lr=1e-5, verbose=1),
     ]
 
+    started = time.time()
     history = model.fit(train_ds, validation_data=val_ds, epochs=args.epochs,
                         callbacks=callbacks, verbose=2)
+    minutes = (time.time() - started) / 60
 
     # Итоговая проверка на отложенной части
     eval_ds = make_dataset(x[test_idx], y[test_idx], args.batch, training=False)
     loss, accuracy = model.evaluate(eval_ds, verbose=0)
     print(f"\nТест: точность {accuracy * 100:.2f} %, ошибка {loss:.3f}")
+    print(f"Время обучения: {minutes:.1f} мин")
 
     # Какие символы путаются чаще всего
     predictions = model.predict(eval_ds, verbose=0).argmax(axis=1)
@@ -323,6 +372,9 @@ def main() -> int:
         "Отчёт обучения MathSnap",
         f"Символов всего: {len(x)}",
         f"Классов: {len(CLASSES)}",
+        f"Вход: {IMG_SIZE}x{IMG_SIZE}, параметров: {model.count_params()}",
+        f"Эпох пройдено: {len(history.history.get('loss', []))}",
+        f"Время обучения: {minutes:.1f} мин",
         f"Точность на тесте: {accuracy * 100:.2f} %",
         "",
         "Частые ошибки (что приняли за что):",
@@ -339,7 +391,10 @@ def main() -> int:
         "loss": round(float(loss), 4),
         "samples": int(len(x)),
         "classes": len(CLASSES),
+        "img_size": IMG_SIZE,
+        "params": int(model.count_params()),
         "epochs_done": len(history.history.get("loss", [])),
+        "minutes": round(minutes, 1),
         "tflite_bytes": size,
         "top_mistakes": [{"from": a, "to": b, "count": c} for (a, b), c in top_mistakes],
     }
