@@ -15,6 +15,15 @@ Fashion-MNIST и CIFAR. Поэтому прошлый прогон получа�
 съедала обёртка safe_source. Здесь файлы качаются самостоятельно, в формате
 idx, с нескольких зеркал, и читаются напрямую через numpy.
 
+Про неполные зеркала. Набор EMNIST состоит из четырёх файлов: картинки
+и метки отдельно для train- и test-части. Зеркала отдают их неровно —
+например, test-labels на трёх проверенных зеркалах отсутствует, вместо
+архива приходит страница-заглушка. Поэтому части теперь независимы:
+train- и test-часть загружаются по отдельности, недоступная пропускается
+с предупреждением, а не отбрасывает весь набор. Train-части достаточно:
+это 88 800 картинок, тогда как раньше из-за одного файла классы x, y, l, g
+оставались с 56 примерами из HASYv2.
+
 Все картинки приводятся ровно к тому же виду, что и HASYv2, и что получится
 в приложении после съёмки камерой: IMG_SIZE x IMG_SIZE, оттенки серого,
 символ белым по чёрному, обрезан по границам и вписан в 75 % кадра.
@@ -44,6 +53,13 @@ EMNIST_FILES = {
     "test_images": "emnist-letters-test-images-idx3-ubyte.gz",
     "test_labels": "emnist-letters-test-labels-idx1-ubyte.gz",
 }
+
+# Пары «картинки + метки»: train- и test-часть загружаются независимо,
+# поэтому отсутствие одной пары не лишает нас второй.
+EMNIST_PARTS = (
+    ("train_images", "train_labels"),
+    ("test_images", "test_labels"),
+)
 
 # Зеркала с файлами EMNIST. Официальный источник (NIST) отдаёт набор одним
 # архивом gzip.zip на 500 МБ — для прогона это лишние 10-15 минут, поэтому
@@ -201,6 +217,25 @@ def _emnist_bytes(key: str) -> bytes:
     return gzip.decompress(path.read_bytes())
 
 
+def _optional_emnist_bytes(key: str):
+    """Байты файла EMNIST или None, если файла нет ни на одном зеркале.
+
+    Файлы набора лежат на зеркалах неровно: test-labels, например, отдаёт
+    страницу-заглушку вместо архива. Раньше из-за одного такого файла
+    отбрасывался весь набор и буквы учились на 56 примерах из HASYv2 —
+    отсюда путаница «1» с «l» и точность 75 % по l и g.
+
+    Теперь отсутствие файла лишь выключает соответствующую пару
+    «картинки + метки», остальные части набора работают.
+    """
+    try:
+        return _emnist_bytes(key)
+    except Exception as error:  # noqa: BLE001 — часть набора не критична
+        print(f"[!] EMNIST: {EMNIST_FILES[key]} недоступен "
+              f"({type(error).__name__}: {error}) — пропускаю эту часть")
+        return None
+
+
 def _idx_images(payload: bytes):
     """Картинки из idx-файла: заголовок 16 байт, дальше байт на пиксель."""
     magic, count, rows, cols = struct.unpack(">IIII", payload[:16])
@@ -250,24 +285,38 @@ def load_emnist_letters(per_class_cap: int = 800,
                         preview_path="train/out/emnist_preview.png"):
     """Буквы x, y, l, g из EMNIST letters — по per_class_cap на букву.
 
-    Две тонкости EMNIST:
+    Три тонкости EMNIST:
       1) картинки хранятся повёрнутыми и отражёнными, поэтому оси нужно
          переставить, иначе буквы окажутся повёрнутыми на 90 градусов;
       2) метки начинаются с единицы (a = 1), поэтому сдвиг определяется
-         по минимальной метке, а не задаётся жёстко.
+         по минимальной метке, а не задаётся жёстко;
+      3) файлы на зеркалах лежат неровно, поэтому train- и test-часть
+         загружаются по отдельности: чего нет — то пропускается.
 
     Про класс «l» отдельно: в EMNIST буква l идёт вместе с написаниями L и 1,
     так что её примеры шумнее остальных. Поэтому она и подписана в интерфейсе
     как «буква l (для log)», а решает по ней всё равно сборка слова целиком.
     """
-    images = np.concatenate([
-        _idx_images(_emnist_bytes("train_images")),
-        _idx_images(_emnist_bytes("test_images")),
-    ])
-    labels = np.concatenate([
-        _idx_labels(_emnist_bytes("train_labels")),
-        _idx_labels(_emnist_bytes("test_labels")),
-    ])
+    image_parts, label_parts = [], []
+
+    for images_key, labels_key in EMNIST_PARTS:
+        images_payload = _optional_emnist_bytes(images_key)
+        labels_payload = _optional_emnist_bytes(labels_key)
+        if images_payload is None or labels_payload is None:
+            continue
+
+        part_images = _idx_images(images_payload)
+        part_labels = _idx_labels(labels_payload)
+        usable = min(len(part_images), len(part_labels))
+        image_parts.append(part_images[:usable])
+        label_parts.append(part_labels[:usable])
+        print(f"[i] EMNIST: часть «{images_key}» — {usable} картинок")
+
+    if not image_parts:
+        raise RuntimeError("ни одна часть EMNIST letters не скачалась")
+
+    images = np.concatenate(image_parts)
+    labels = np.concatenate(label_parts)
     images = np.transpose(images, (0, 2, 1))
 
     letters = {name for name in letters if name in CLASS_TO_INDEX}
