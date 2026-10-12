@@ -2,8 +2,9 @@ name: Train OCR model
 
 # Обучение своей модели распознавания символов в облаке.
 # Обычный запуск: вручную — Actions → Train OCR model → Run workflow.
-# Этот файл трогаем редко: любая правка в нём запускает обучение сама,
-# так как минуты Actions в приватном репозитории ограничены (2000 в месяц).
+# Этот файл трогаем редко: любая правка в нём запускает обучение сама.
+# В публичном репозитории минуты Actions не тратятся вовсе,
+# поэтому репозиторий лучше держать открытым.
 # Заливка своих фото в data/handwritten/ обучение НЕ запускает.
 #
 # Режим обучения: вход 32x32, до 400 примеров на класс, готовые картинки
@@ -14,13 +15,22 @@ name: Train OCR model
 # Зависимости лежат в requirements.txt в корне: его требует кэш pip.
 # Файл удалять нельзя — setup-python без него падает за секунды.
 #
+# Что печатается и где читать итоги:
+#   1) шаг «Диагностика датасета» — сколько картинок, какие таблицы и колонки;
+#   2) шаг «Обучение модели» — сколько символов попало в обучение и шагов на эпоху;
+#   3) шаг «Итоги обучения» — точность на тесте и список путаниц.
+# Все три вывода дублируются в файлы train/out/*.txt и коммитятся
+# в репозиторий шагом «Сохранить отчёты» — читать их можно прямо на GitHub,
+# без скачивания артефактов.
+#
 # Почему раньше прогоны падали и что закрыто:
 #   1) setup-python падал без requirements.txt — файл добавлен;
 #   2) битый (недокачанный) архив датасета закреплялся в кэше и ронял
 #      каждый следующий прогон — download_data.py теперь проверяет архив
-#      и удаляет мусор, а кэш datаcета переведён на новый ключ hasyv2-v2;
-#   3) не было видно итогов без артефактов — добавлен шаг «Итоги обучения»,
-#      он печатает точность, число символов и список путаниц прямо в лог.
+#      и удаляет мусор, а кэш датасета переведён на новый ключ hasyv2-v2;
+#   3) кэш подготовленных картинок mathsnap-cache-v4 мог хранить огрызок
+#      датасета (обучение проходило за 29 секунд вместо часов) — ключ
+#      переведён на mathsnap-cache-v5, старый огрызок больше не подхватится.
 
 on:
   workflow_dispatch:
@@ -67,11 +77,13 @@ jobs:
           path: data/hasy
           key: hasyv2-v2
 
+      # Ключ v5: старый кэш мог содержать огрызок датасета,
+      # из-за которого обучение завершалось за считанные секунды.
       - name: Кэш подготовленных картинок
         uses: actions/cache@v4
         with:
           path: data/cache
-          key: mathsnap-cache-v4
+          key: mathsnap-cache-v5
 
       - name: Зависимости
         run: |
@@ -81,19 +93,27 @@ jobs:
       - name: Датасет рукописных символов
         run: python data/download_data.py --out data/hasy
 
+      # Вывод диагностики сохраняется в файл: он попадёт в репозиторий,
+      # и разбирать датасет можно без скачивания логов.
       - name: Диагностика датасета
         if: always()
-        run: python data/inspect_dataset.py --data data
+        run: |
+          mkdir -p train/out
+          python data/inspect_dataset.py --data data 2>&1 | tee train/out/dataset_diag.txt
 
+      # pipefail нужен, чтобы провал обучения не «съедался» конвейером
+      # с tee: прогон остаётся красным, а лог при этом сохраняется.
       - name: Обучение модели
         run: |
+          set -o pipefail
+          mkdir -p train/out
           python train/train.py \
             --data data \
             --epochs ${{ github.event.inputs.epochs || 60 }} \
             --per-class-cap 400 \
             --batch 128 \
             --out assets/model.tflite \
-            --report-dir train/out
+            --report-dir train/out 2>&1 | tee train/out/train_log.txt
 
       # Итоги печатаем в лог: артефакты скачивать неудобно, а цифры нужны сразу.
       - name: Итоги обучения
@@ -122,6 +142,25 @@ jobs:
             echo "Модели нет: обучение не дошло до сохранения."
           fi
 
+      # Отчёты коммитятся даже при провале обучения: по ним видно,
+      # на каком шаге и почему всё сломалось. Логи прогонов живут
+      # в Actions ограниченное время, а файл в репозитории остаётся.
+      - name: Сохранить отчёты
+        if: always()
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f train/out/dataset_diag.txt train/out/train_log.txt \
+                     train/out/report.txt train/out/metrics.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "Новых отчётов нет — коммит не нужен"
+            exit 0
+          fi
+          git commit -m "auto: отчёты обучения"
+          git pull --rebase --autostash origin ${GITHUB_REF_NAME} || true
+          git push
+
       - name: Артефакты обучения
         if: always()
         uses: actions/upload-artifact@v4
@@ -132,6 +171,8 @@ jobs:
             assets/model.tflite
             train/out/metrics.json
             train/out/report.txt
+            train/out/dataset_diag.txt
+            train/out/train_log.txt
 
       # Падение push не должно ронять джобу: модель в любом случае
       # остаётся в артефактах и её можно закоммитить руками.
@@ -150,5 +191,6 @@ jobs:
             echo "Модель не изменилась — коммит не нужен"
           else
             git commit -m "auto: обновление модели распознавания"
+            git pull --rebase --autostash origin ${GITHUB_REF_NAME} || true
             git push
           fi
