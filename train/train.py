@@ -1,23 +1,35 @@
 """Обучение своей CNN для распознавания рукописных символов MathSnap.
 
-Данные: HASYv2 (реальные рукописные символы) + свои фото из data/handwritten/.
-Выход: assets/model.tflite (лежит внутри APK) и отчёт с метриками.
+Источники данных:
+  * HASYv2 — реальные рукописные символы (качает data/download_data.py);
+  * MNIST — рукописные цифры 0..9 (data/extra_data.py);
+  * EMNIST letters — рукописные x, y, l, g (data/extra_data.py);
+  * отрисовка шрифтом — знаки +, -, =, (, ), ., /, ^, sqrt, по которым
+    рукописных примеров почти нет (data/render_glyphs.py);
+  * свои фото из data/handwritten/ — папка на каждый класс.
 
-Режим подобран под бесплатный ранер GitHub (2 ядра):
-вход 32x32, до 400 примеров на класс, подготовленные картинки кэшируются
-в data/cache, чтобы повторный прогон не тратил время на препроцессинг.
+Выход: assets/model.tflite (лежит внутри APK) и отчёт с метриками в train/out.
 
-Про таблицы датасета: в архиве HASYv2 лежит несколько CSV, и нужная
-выбирается автоматически — по числу строк, которые совпали с нашими
-классами. Метка может быть задана LaTeX-ом или номером символа
-(тогда номер расшифровывается через symbols.csv). Картинка ищется
-по имени файла из колонки path, по точному пути или по номеру картинки.
+Почему предыдущий прогон дал 15,94 %. В обучение попало 2598 символов,
+из них 1200 — три самых частых класса, срезанных пределом 400, а пять
+классов (=, (, ), ., ^) остались вообще без примеров. При таком объёме
+сеть заучила выборку: обучающая точность выросла до 82 %, проверочная
+упала с 16,4 % до 3,2 %, лучшей оказалась первая же эпоха. Что изменено:
+
+  1) подключены MNIST, EMNIST и отрисовка знаков — пустых классов больше нет;
+  2) предел на класс поднят 400 -> 1200 и применяется ко всем источникам
+     сразу, а не по отдельности;
+  3) редкие классы получают вес, обратный частоте (sample_weights в tf.data);
+  4) деление на обучение/проверку/тест стратифицированное: каждый класс
+     попадает во все три части, проверка больше не зависит от везения;
+  5) терпение ранней остановки 6 -> 12 эпох;
+  6) в отчёт добавлены источники, примеры по классам и точность по классам.
 
 Запуск локально:
     pip install -r requirements.txt
     python data/download_data.py --out data/hasy
     python data/inspect_dataset.py --data data
-    python train/train.py --epochs 60
+    python train/train.py --epochs 60 --per-class-cap 1200
 В облаке это делает .github/workflows/train.yml
 """
 
@@ -33,14 +45,17 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 
-# Чтобы import ocr.* работал и при запуске из корня, и из папки train
+# Чтобы import ocr.* и data.* работал и при запуске из корня, и из папки train
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from data.extra_data import load_emnist_letters, load_mnist  # noqa: E402
+from data.render_glyphs import render_dataset  # noqa: E402
 from ocr.labels import (  # noqa: E402
     CLASS_TO_INDEX,
     CLASSES,
     HUMAN_NAMES,
     IMG_SIZE,
+    NUM_CLASSES,
 )
 from ocr.model import build_model  # noqa: E402
 
@@ -65,6 +80,15 @@ PATH_PARTIAL = ("path", "file")
 ID_EXACT = ("image_id", "imageid", "img_id", "imgid", "id")
 LABEL_EXACT = ("symbol_id", "symbolid", "symbol", "label",
                "class", "class_id", "label_id", "target")
+
+# Ниже этого числа примеров класс считается редким и попадает в предупреждения
+LOW_COUNT = 200
+
+
+def empty_batch():
+    """Пустая порция данных — общий ответ для недоступного источника."""
+    return (np.zeros((0, IMG_SIZE, IMG_SIZE), dtype=np.float32),
+            np.zeros((0,), dtype=np.int64))
 
 
 def norm_row(row) -> dict:
@@ -338,8 +362,7 @@ def load_hasy(csv_path: Path, hasy_dir: Path, symbols_map: dict, per_class_cap: 
         x = np.stack(features)
         y = np.asarray(labels, dtype=np.int64)
     else:
-        x = np.zeros((0, IMG_SIZE, IMG_SIZE), dtype=np.float32)
-        y = np.zeros((0,), dtype=np.int64)
+        x, y = empty_batch()
     return x, y, per_class
 
 
@@ -367,14 +390,50 @@ def load_hasy_cached(csv_path: Path, hasy_dir: Path, symbols_map: dict,
     return x, y, per_class
 
 
+def load_or_build(cache_path: Path, builder, name: str):
+    """Берёт готовый набор из кэша, а если кэша нет — собирает и сохраняет.
+
+    Пустой результат в кэш не пишется: иначе недоступный источник
+    закрепился бы и следующий прогон снова получил бы ноль.
+    """
+    if cache_path.exists():
+        try:
+            packed = np.load(cache_path, allow_pickle=False)
+            x, y = packed["x"], packed["y"]
+            print(f"[i] {name}: {len(x)} символов из кэша ({cache_path.name})")
+            return x, y
+        except Exception as error:  # noqa: BLE001 — кэш не критичен
+            print(f"[!] Кэш «{name}» не прочитался ({error}) — готовлю заново")
+
+    x, y = builder()
+    if len(x):
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        np.savez_compressed(cache_path, x=x, y=y)
+        print(f"[i] {name}: {len(x)} символов сохранено в кэш ({cache_path.name})")
+    return x, y
+
+
+def safe_source(name: str, builder):
+    """Берёт данные источника, не роняя прогон при его недоступности.
+
+    Внешний набор может не скачаться, шрифта может не найтись — из-за этого
+    терять весь прогон незачем: работаем на том, что есть, и печатаем причину.
+    """
+    try:
+        return builder()
+    except Exception as error:  # noqa: BLE001 — источник не критичен
+        print(f"[!] {name}: данные недоступны ({type(error).__name__}: {error})")
+        print(f"    Продолжаю обучение без источника «{name}».")
+        return empty_batch()
+
+
 def load_handwritten(root: Path):
     """Свои фото: папка на каждый класс, имя папки = класс из ocr/labels.py."""
     features, labels = [], []
 
     if not root.exists():
-        print(f"[i] Папки со своими фото нет ({root}) — учусь только на датасете.")
-        return (np.zeros((0, IMG_SIZE, IMG_SIZE), dtype=np.float32),
-                np.zeros((0,), dtype=np.int64))
+        print(f"[i] Папки со своими фото нет ({root}) — учусь только на наборах.")
+        return empty_batch()
 
     for class_dir in sorted(p for p in root.iterdir() if p.is_dir()):
         symbol = class_dir.name
@@ -395,25 +454,104 @@ def load_handwritten(root: Path):
         y = np.asarray(labels, dtype=np.int64)
         print(f"[i] Свои фото: {len(features)} штук")
     else:
-        x = np.zeros((0, IMG_SIZE, IMG_SIZE), dtype=np.float32)
-        y = np.zeros((0,), dtype=np.int64)
+        x, y = empty_batch()
     return x, y
 
 
-def make_dataset(x, y, batch_size: int, training: bool, seed: int = 1):
+def limit_per_class(x, y, cap: int, seed: int = 21):
+    """Оставляет не больше cap примеров на класс — по всем источникам сразу.
+
+    Предел применяется здесь, а не внутри каждого набора, иначе по одному
+    классу можно было бы набрать 400 из HASYv2 плюс 1200 из MNIST
+    и перекосить обучение.
+    """
+    if cap <= 0 or len(y) == 0:
+        return x, y
+
+    rng = np.random.default_rng(seed)
+    chosen = []
+    for index in range(NUM_CLASSES):
+        positions = np.where(y == index)[0]
+        if len(positions) > cap:
+            positions = rng.choice(positions, size=cap, replace=False)
+        chosen.append(positions)
+
+    keep = np.concatenate(chosen)
+    keep = rng.permutation(keep)
+    return x[keep], y[keep]
+
+
+def stratified_split(y, val_fraction=0.12, test_fraction=0.08, seed=13):
+    """Делит данные на обучение/проверку/тест с сохранением классов.
+
+    Обычный случайный сплит может отдать редкий класс целиком в проверку,
+    и тогда точность по нему окажется нулевой при живом обучении.
+    Здесь каждый класс делится отдельно, а совсем крошечные классы
+    (меньше четырёх примеров) целиком остаются в обучении.
+    """
+    rng = np.random.default_rng(seed)
+    train_parts, val_parts, test_parts = [], [], []
+
+    for index in range(NUM_CLASSES):
+        positions = np.where(y == index)[0]
+        if len(positions) == 0:
+            continue
+        rng.shuffle(positions)
+
+        if len(positions) < 4:
+            train_parts.append(positions)
+            continue
+
+        n_test = min(max(1, int(round(len(positions) * test_fraction))),
+                     len(positions) - 3)
+        n_val = min(max(1, int(round(len(positions) * val_fraction))),
+                     len(positions) - n_test - 2)
+
+        test_parts.append(positions[:n_test])
+        val_parts.append(positions[n_test:n_test + n_val])
+        train_parts.append(positions[n_test + n_val:])
+
+    def join(parts):
+        if not parts:
+            return np.zeros((0,), dtype=np.int64)
+        return np.sort(np.concatenate(parts))
+
+    return join(train_parts), join(val_parts), join(test_parts)
+
+
+def class_weights(y, num_classes: int = NUM_CLASSES):
+    """Веса классов, обратные частоте: редкий символ весит больше частого.
+
+    Без этого двадцать три класса конкурируют «по числу картинок»: цифры
+    из MNIST задавили бы корень, степень и дробную черту.
+    """
+    counts = np.bincount(y, minlength=num_classes).astype(np.float64)
+    present = counts > 0
+    weights = np.ones(num_classes, dtype=np.float32)
+    if present.any():
+        weights[present] = (counts[present].sum() /
+                            (present.sum() * counts[present])).astype(np.float32)
+    return weights
+
+
+def make_dataset(x, y, weights=None, batch_size: int = 128,
+                 training: bool = False, seed: int = 1):
     """tf.data-пайплайн.
 
     Аугментация сделана на дешёвых операциях tf.image (яркость, контраст,
     сдвиг на пару пикселей) — на процессоре это в разы быстрее, чем
     поворот и масштабирование слоями Keras при том же эффекте.
     """
-    dataset = tf.data.Dataset.from_tensor_slices((x, y))
+    if weights is None:
+        weights = np.ones(len(y), dtype=np.float32)
+
+    dataset = tf.data.Dataset.from_tensor_slices((x, y, weights))
 
     if training:
         dataset = dataset.shuffle(min(len(x), 20000), seed=seed,
                                   reshuffle_each_iteration=True)
 
-        def augment(image, label):
+        def augment(image, label, weight):
             image = image[..., tf.newaxis]
             image = tf.image.random_brightness(image, max_delta=0.10)
             image = tf.image.random_contrast(image, 0.85, 1.15)
@@ -422,23 +560,11 @@ def make_dataset(x, y, batch_size: int, training: bool, seed: int = 1):
             image = tf.pad(image, [[shift, shift], [shift, shift], [0, 0]],
                            constant_values=0.0)
             image = tf.image.random_crop(image, [IMG_SIZE, IMG_SIZE, 1])
-            return tf.squeeze(image, -1), label
+            return tf.squeeze(image, -1), label, weight
 
         dataset = dataset.map(augment, num_parallel_calls=tf.data.AUTOTUNE)
 
     return dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
-
-
-def split_indices(count: int, val_fraction=0.12, test_fraction=0.08, seed=13):
-    """Делит данные на train/val/test. Тест не пересекается с валидацией."""
-    rng = np.random.default_rng(seed)
-    order = rng.permutation(count)
-    n_test = int(count * test_fraction)
-    n_val = int(count * val_fraction)
-    test = order[:n_test]
-    val = order[n_test:n_test + n_val]
-    train = order[n_test + n_val:]
-    return train, val, test
 
 
 def export_tflite(model, out_path: Path) -> int:
@@ -456,8 +582,12 @@ def main() -> int:
     parser.add_argument("--data", default="data", help="папка с данными")
     parser.add_argument("--epochs", type=int, default=60)
     parser.add_argument("--batch", type=int, default=128)
-    parser.add_argument("--per-class-cap", type=int, default=400,
+    parser.add_argument("--per-class-cap", type=int, default=1200,
                         help="предел примеров на класс — чтобы частые символы не перевесили")
+    parser.add_argument("--patience", type=int, default=12,
+                        help="сколько эпох без улучшения ждать до остановки")
+    parser.add_argument("--no-extra", action="store_true",
+                        help="не подключать MNIST, EMNIST и отрисовку знаков")
     parser.add_argument("--out", default="assets/model.tflite")
     parser.add_argument("--report-dir", default="train/out")
     parser.add_argument("--no-cache", action="store_true",
@@ -468,6 +598,8 @@ def main() -> int:
 
     data_dir = Path(args.data)
     hasy_dir = data_dir / "hasy"
+    cache_dir = data_dir / "cache"
+    cap = args.per_class_cap
 
     if not hasy_dir.exists():
         print(f"[X] Не нашёл папку датасета {hasy_dir}.")
@@ -482,48 +614,107 @@ def main() -> int:
         return 1
     print(f"[i] Таблица меток: {label_csv.relative_to(hasy_dir)}")
 
-    cache_path = data_dir / "cache" / f"glyphs_{IMG_SIZE}_{args.per_class_cap}_{label_csv.stem}.npz"
+    cache_path = cache_dir / f"glyphs_{IMG_SIZE}_{cap}_{label_csv.stem}.npz"
     if args.no_cache and cache_path.exists():
         cache_path.unlink()
 
-    x_hasy, y_hasy, per_class = load_hasy_cached(
-        label_csv, hasy_dir, symbols_map, args.per_class_cap, cache_path)
+    x_hasy, y_hasy, _ = load_hasy_cached(
+        label_csv, hasy_dir, symbols_map, cap, cache_path)
     print(f"[i] Из датасета взято {len(x_hasy)} символов")
 
-    if len(x_hasy) == 0:
+    sources = {"hasyv2": int(len(x_hasy))}
+    parts_x, parts_y = [x_hasy], [y_hasy]
+
+    # ── дополнительные источники ────────────────────────────────────────────
+    if not args.no_extra:
+        def mnist_builder():
+            return load_mnist(per_class_cap=cap)
+
+        x_mnist, y_mnist = load_or_build(
+            cache_dir / f"mnist_{IMG_SIZE}_{cap}.npz",
+            lambda: safe_source("MNIST (цифры)", mnist_builder),
+            "MNIST (цифры)")
+        sources["mnist"] = int(len(x_mnist))
+
+        def emnist_builder():
+            return load_emnist_letters(per_class_cap=cap)
+
+        x_emnist, y_emnist = load_or_build(
+            cache_dir / f"emnist_{IMG_SIZE}_{cap}.npz",
+            lambda: safe_source("EMNIST (буквы x/y/l/g)", emnist_builder),
+            "EMNIST (буквы x/y/l/g)")
+        sources["emnist"] = int(len(x_emnist))
+
+        def rendered_builder():
+            x_rendered, y_rendered, _ = render_dataset(per_class_cap=cap)
+            return x_rendered, y_rendered
+
+        x_rendered, y_rendered = load_or_build(
+            cache_dir / f"rendered_{IMG_SIZE}_{cap}.npz",
+            lambda: safe_source("Отрисовка шрифтом (знаки)", rendered_builder),
+            "Отрисовка шрифтом (знаки)")
+        sources["rendered"] = int(len(x_rendered))
+
+        parts_x += [x_mnist, x_emnist, x_rendered]
+        parts_y += [y_mnist, y_emnist, y_rendered]
+
+    x_sets = np.concatenate([part for part in parts_x if len(part)])
+    y_sets = np.concatenate([part for part in parts_y if len(part)])
+    print(f"[i] Наборы вместе: {len(x_sets)} символов")
+
+    x_sets, y_sets = limit_per_class(x_sets, y_sets, cap)
+    print(f"[i] После предела {cap} на класс: {len(x_sets)} символов")
+
+    if len(x_sets) == 0:
         print("[X] Ни один символ не сопоставился с метками.")
         print("    Смотри шаг «Диагностика датасета» в логе прогона.")
         return 1
 
+    # Свои фото добавляются после предела и идут только в обучение:
+    # проверять на них бессмысленно (их единицы), а в весах они ценны.
     x_mine, y_mine = load_handwritten(data_dir / "handwritten")
+    sources["handwritten"] = int(len(x_mine))
 
-    x = np.concatenate([x_hasy, x_mine])
-    y = np.concatenate([y_hasy, y_mine])
+    n_sets = len(x_sets)
+    train_idx, val_idx, test_idx = stratified_split(y_sets)
+    train_idx = np.concatenate([train_idx,
+                               np.arange(n_sets, n_sets + len(x_mine))])
+
+    x = np.concatenate([x_sets, x_mine])
+    y = np.concatenate([y_sets, y_mine])
 
     if len(x) < 500:
         print(f"[X] Данных слишком мало: {len(x)}. Проверь распаковку датасета.")
         return 1
 
-    # Свои фото всегда идут в обучение, а не в тест — проверять на них бессмысленно
-    n_dataset = len(x_hasy)
-    train_idx, val_idx, test_idx = split_indices(n_dataset)
-    train_idx = np.concatenate([train_idx, np.arange(n_dataset, n_dataset + len(x_mine))])
+    counts = np.bincount(y, minlength=NUM_CLASSES)
+    empty_classes = [symbol for index, symbol in enumerate(CLASSES)
+                     if counts[index] == 0]
+    rare_classes = [(symbol, int(counts[index]))
+                    for index, symbol in enumerate(CLASSES)
+                    if 0 < counts[index] < LOW_COUNT]
 
     steps_per_epoch = max(1, len(train_idx) // args.batch)
     print(f"[i] Всего символов: {len(x)} → обучение {len(train_idx)}, "
           f"проверка {len(val_idx)}, тест {len(test_idx)}")
-    print(f"[i] Шагов на эпоху: {steps_per_epoch} (батч {args.batch}, вход {IMG_SIZE}x{IMG_SIZE})")
+    print(f"[i] Шагов на эпоху: {steps_per_epoch} (батч {args.batch}, "
+          f"вход {IMG_SIZE}x{IMG_SIZE})")
 
-    # Редкие классы предупреждаем отдельно: они обычно и «плывут» на фото
-    for symbol in CLASSES:
-        count = per_class.get(symbol, 0)
-        if count < 150:
-            pretty = HUMAN_NAMES.get(symbol, symbol)
-            print(f"[!] Мало примеров для «{pretty}»: {count}. "
-                  f"Добавь свои фото в data/handwritten/{symbol}/")
+    if empty_classes:
+        print(f"[!] Классы без единого примера: {', '.join(empty_classes)}")
+    for symbol, count in rare_classes:
+        pretty = HUMAN_NAMES.get(symbol, symbol)
+        print(f"[!] Мало примеров для «{pretty}»: {count}. "
+              f"Добавь свои фото в data/handwritten/{symbol}/")
 
-    train_ds = make_dataset(x[train_idx], y[train_idx], args.batch, training=True)
-    val_ds = make_dataset(x[val_idx], y[val_idx], args.batch, training=False)
+    weights = class_weights(y[train_idx])
+    train_ds = make_dataset(x[train_idx], y[train_idx],
+                            weights=weights[y[train_idx]],
+                            batch_size=args.batch, training=True)
+    val_ds = make_dataset(x[val_idx], y[val_idx], batch_size=args.batch)
+    print("[i] Веса редких классов: " + ", ".join(
+        f"{HUMAN_NAMES.get(symbol, symbol)}={weights[CLASS_TO_INDEX[symbol]]:.1f}"
+        for symbol, count in rare_classes[:6] if count > 0) or "нет")
 
     model = build_model()
     print(f"[i] Параметров в модели: {model.count_params()}")
@@ -535,10 +726,11 @@ def main() -> int:
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(str(checkpoint), monitor="val_accuracy",
                                            save_best_only=True, verbose=1),
-        tf.keras.callbacks.EarlyStopping(monitor="val_accuracy", patience=6,
+        tf.keras.callbacks.EarlyStopping(monitor="val_accuracy",
+                                         patience=args.patience,
                                          restore_best_weights=True, verbose=1),
         tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5,
-                                             patience=3, min_lr=1e-5, verbose=1),
+                                             patience=4, min_lr=1e-5, verbose=1),
     ]
 
     started = time.time()
@@ -547,33 +739,69 @@ def main() -> int:
     minutes = (time.time() - started) / 60
 
     # Итоговая проверка на отложенной части
-    eval_ds = make_dataset(x[test_idx], y[test_idx], args.batch, training=False)
+    eval_ds = make_dataset(x[test_idx], y[test_idx], batch_size=args.batch)
     loss, accuracy = model.evaluate(eval_ds, verbose=0)
     print(f"\nТест: точность {accuracy * 100:.2f} %, ошибка {loss:.3f}")
     print(f"Время обучения: {minutes:.1f} мин")
 
-    # Какие символы путаются чаще всего
+    # Какие символы путаются чаще всего и как обстоит дело по каждому классу
     predictions = model.predict(eval_ds, verbose=0).argmax(axis=1)
+    true_labels = y[test_idx]
     mistakes = {}
-    for true_index, predicted_index in zip(y[test_idx], predictions):
+    for true_index, predicted_index in zip(true_labels, predictions):
         if true_index != predicted_index:
             pair = (CLASSES[true_index], CLASSES[predicted_index])
             mistakes[pair] = mistakes.get(pair, 0) + 1
     top_mistakes = sorted(mistakes.items(), key=lambda item: -item[1])[:12]
 
+    per_class_accuracy = {}
+    for index, symbol in enumerate(CLASSES):
+        mask = true_labels == index
+        if not mask.any():
+            continue
+        per_class_accuracy[symbol] = {
+            "accuracy": round(float((predictions[mask] == index).mean()), 4),
+            "samples": int(mask.sum()),
+        }
+
+    def pretty(symbol):
+        return HUMAN_NAMES.get(symbol, symbol)
+
     lines = [
         "Отчёт обучения MathSnap",
+        "",
+        "Источники данных:",
+    ]
+    lines += [f"  {name}: {count}" for name, count in sources.items()]
+    lines += [
+        "",
         f"Таблица меток: {label_csv.relative_to(hasy_dir)}",
-        f"Символов всего: {len(x)}",
-        f"Классов: {len(CLASSES)}",
+        f"Предел на класс: {cap}",
+        f"Символов всего: {len(x)} → обучение {len(train_idx)}, "
+        f"проверка {len(val_idx)}, тест {len(test_idx)}",
+        f"Классов: {len(CLASSES)}, без примеров: "
+        f"{len(empty_classes)}{' (' + ', '.join(empty_classes) + ')' if empty_classes else ''}",
         f"Вход: {IMG_SIZE}x{IMG_SIZE}, параметров: {model.count_params()}",
-        f"Эпох пройдено: {len(history.history.get('loss', []))}",
+        f"Эпох пройдено: {len(history.history.get('loss', []))} "
+        f"(терпение {args.patience})",
         f"Время обучения: {minutes:.1f} мин",
         f"Точность на тесте: {accuracy * 100:.2f} %",
         "",
-        "Частые ошибки (что приняли за что):",
+        "Примеров по классам:",
     ]
-    lines += [f"  {a} → {b}: {count} раз" for (a, b), count in top_mistakes] or ["  нет"]
+    lines += [f"  {symbol}: {int(counts[CLASS_TO_INDEX[symbol]])}"
+              for symbol in CLASSES]
+    lines += ["", "Точность по классам:"]
+    if per_class_accuracy:
+        lines += [f"  {pretty(symbol)}: "
+                  f"{value['accuracy'] * 100:.1f} % (примеров {value['samples']})"
+                  for symbol, value in per_class_accuracy.items()]
+    else:
+        lines.append("  нет данных")
+    lines += ["", "Частые ошибки (что приняли за что):"]
+    lines += [f"  {pretty(a)} → {pretty(b)}: {count} раз"
+              for (a, b), count in top_mistakes] or ["  нет"]
+
     report_text = "\n".join(lines)
     (report_dir / "report.txt").write_text(report_text, encoding="utf-8")
 
@@ -584,14 +812,25 @@ def main() -> int:
         "accuracy": round(float(accuracy), 4),
         "loss": round(float(loss), 4),
         "samples": int(len(x)),
+        "samples_train": int(len(train_idx)),
+        "samples_val": int(len(val_idx)),
+        "samples_test": int(len(test_idx)),
+        "sources": sources,
+        "class_counts": {symbol: int(counts[CLASS_TO_INDEX[symbol]])
+                         for symbol in CLASSES},
+        "per_class_accuracy": per_class_accuracy,
+        "empty_classes": empty_classes,
         "classes": len(CLASSES),
         "img_size": IMG_SIZE,
+        "per_class_cap": cap,
+        "patience": args.patience,
         "params": int(model.count_params()),
         "epochs_done": len(history.history.get("loss", [])),
         "minutes": round(minutes, 1),
         "tflite_bytes": size,
         "label_csv": str(label_csv.relative_to(hasy_dir)),
-        "top_mistakes": [{"from": a, "to": b, "count": c} for (a, b), c in top_mistakes],
+        "top_mistakes": [{"from": a, "to": b, "count": c}
+                         for (a, b), c in top_mistakes],
     }
     (report_dir / "metrics.json").write_text(
         json.dumps(metrics, ensure_ascii=False, indent=2), encoding="utf-8")
