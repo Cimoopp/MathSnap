@@ -1,13 +1,15 @@
 name: Train OCR model
 
 # Обучение своей модели распознавания символов в облаке.
-# Запуск: любой push в train/, ocr/, data/ или этот файл,
-# либо вручную — Actions → Train OCR model → Run workflow.
+# Запуск: вручную — Actions → Train OCR model → Run workflow,
+# либо push в train/** или в этот файл.
+# Заливка своих фото в data/handwritten/ обучение НЕ запускает: минуты
+# Actions в приватном репозитории ограничены, поэтому запуск только осознанный.
 #
-# Режим обучения: вход 32x32, до 500 примеров на класс, готовые картинки
-# кэшируются в data/cache. Лимит джобы 355 минут — с запасом под 6 часов
-# бесплатного ранера GitHub; на практике обучение закрывается раньше
-# за счёт EarlyStopping.
+# Режим обучения: вход 32x32, до 400 примеров на класс, готовые картинки
+# кэшируются в data/cache. Лимит джобы 355 минут: на 32x32 эпоха проходит
+# за 0,6-1,2 мин, то есть 60 эпох — это 36-72 мин, плюс скачивание датасета
+# и установка зависимостей. Ранняя остановка обычно закрывает прогон раньше.
 
 on:
   workflow_dispatch:
@@ -19,9 +21,13 @@ on:
   push:
     paths:
       - "train/**"
-      - "ocr/**"
-      - "data/**"
       - ".github/workflows/train.yml"
+
+# Два обучения одновременно не запускаем: это экономит минуты аккаунта.
+# Новый push не отменяет идущий прогон, а встаёт в очередь за ним.
+concurrency:
+  group: mathsnap-train
+  cancel-in-progress: false
 
 jobs:
   train:
@@ -29,6 +35,10 @@ jobs:
     timeout-minutes: 355
     permissions:
       contents: write
+
+    env:
+      # Меньше служебного шума в логах, логи компактнее — они тоже лимитированы
+      TF_CPP_MIN_LOG_LEVEL: "3"
 
     steps:
       - uses: actions/checkout@v4
@@ -63,7 +73,8 @@ jobs:
           python train/train.py \
             --data data \
             --epochs ${{ github.event.inputs.epochs || 60 }} \
-            --per-class-cap 500 \
+            --per-class-cap 400 \
+            --batch 128 \
             --out assets/model.tflite \
             --report-dir train/out
 
