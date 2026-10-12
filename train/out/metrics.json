@@ -1,74 +1,206 @@
 {
-  "accuracy": 0.1594,
-  "loss": 2.9887,
-  "samples": 2598,
+  "accuracy": 0.9907,
+  "loss": 0.0507,
+  "samples": 24170,
+  "samples_train": 19336,
+  "samples_val": 2901,
+  "samples_test": 1933,
+  "sources": {
+    "hasyv2": 4443,
+    "mnist": 12000,
+    "emnist": 0,
+    "rendered": 10800,
+    "handwritten": 0
+  },
+  "class_counts": {
+    "0": 1200,
+    "1": 1200,
+    "2": 1200,
+    "3": 1200,
+    "4": 1200,
+    "5": 1200,
+    "6": 1200,
+    "7": 1200,
+    "8": 1200,
+    "9": 1200,
+    "+": 1200,
+    "-": 1200,
+    "=": 1200,
+    "(": 1200,
+    ")": 1200,
+    "x": 1200,
+    "y": 58,
+    ".": 1200,
+    "/": 1200,
+    "sqrt": 1200,
+    "^": 1200,
+    "l": 56,
+    "g": 56
+  },
+  "per_class_accuracy": {
+    "0": {
+      "accuracy": 0.9896,
+      "samples": 96
+    },
+    "1": {
+      "accuracy": 0.9375,
+      "samples": 96
+    },
+    "2": {
+      "accuracy": 1.0,
+      "samples": 96
+    },
+    "3": {
+      "accuracy": 0.9792,
+      "samples": 96
+    },
+    "4": {
+      "accuracy": 0.9896,
+      "samples": 96
+    },
+    "5": {
+      "accuracy": 0.9896,
+      "samples": 96
+    },
+    "6": {
+      "accuracy": 0.9792,
+      "samples": 96
+    },
+    "7": {
+      "accuracy": 1.0,
+      "samples": 96
+    },
+    "8": {
+      "accuracy": 0.9896,
+      "samples": 96
+    },
+    "9": {
+      "accuracy": 1.0,
+      "samples": 96
+    },
+    "+": {
+      "accuracy": 1.0,
+      "samples": 96
+    },
+    "-": {
+      "accuracy": 1.0,
+      "samples": 96
+    },
+    "=": {
+      "accuracy": 1.0,
+      "samples": 96
+    },
+    "(": {
+      "accuracy": 1.0,
+      "samples": 96
+    },
+    ")": {
+      "accuracy": 1.0,
+      "samples": 96
+    },
+    "x": {
+      "accuracy": 0.9792,
+      "samples": 96
+    },
+    "y": {
+      "accuracy": 1.0,
+      "samples": 5
+    },
+    ".": {
+      "accuracy": 1.0,
+      "samples": 96
+    },
+    "/": {
+      "accuracy": 1.0,
+      "samples": 96
+    },
+    "sqrt": {
+      "accuracy": 1.0,
+      "samples": 96
+    },
+    "^": {
+      "accuracy": 1.0,
+      "samples": 96
+    },
+    "l": {
+      "accuracy": 0.75,
+      "samples": 4
+    },
+    "g": {
+      "accuracy": 0.75,
+      "samples": 4
+    }
+  },
+  "empty_classes": [],
   "classes": 23,
   "img_size": 32,
+  "per_class_cap": 1200,
+  "patience": 12,
   "params": 173807,
-  "epochs_done": 7,
-  "minutes": 0.2,
+  "epochs_done": 60,
+  "minutes": 31.3,
   "tflite_bytes": 184472,
   "label_csv": "hasy-data-labels.csv",
   "top_mistakes": [
     {
-      "from": "/",
-      "to": "sqrt",
-      "count": 30
+      "from": "1",
+      "to": "l",
+      "count": 4
     },
     {
       "from": "x",
-      "to": "/",
-      "count": 19
-    },
-    {
-      "from": "x",
-      "to": "sqrt",
-      "count": 14
-    },
-    {
-      "from": "0",
-      "to": "sqrt",
-      "count": 13
-    },
-    {
-      "from": "-",
-      "to": "sqrt",
-      "count": 12
-    },
-    {
-      "from": "9",
-      "to": "sqrt",
-      "count": 10
+      "to": "-",
+      "count": 2
     },
     {
       "from": "3",
-      "to": "sqrt",
-      "count": 9
+      "to": "9",
+      "count": 1
     },
     {
-      "from": "2",
-      "to": "sqrt",
-      "count": 9
-    },
-    {
-      "from": "1",
-      "to": "sqrt",
-      "count": 7
-    },
-    {
-      "from": "8",
-      "to": "sqrt",
-      "count": 6
-    },
-    {
-      "from": "g",
-      "to": "sqrt",
-      "count": 6
+      "from": "6",
+      "to": "0",
+      "count": 1
     },
     {
       "from": "4",
-      "to": "sqrt",
-      "count": 5
+      "to": "7",
+      "count": 1
+    },
+    {
+      "from": "6",
+      "to": "8",
+      "count": 1
+    },
+    {
+      "from": "5",
+      "to": "9",
+      "count": 1
+    },
+    {
+      "from": "1",
+      "to": "x",
+      "count": 1
+    },
+    {
+      "from": "g",
+      "to": "9",
+      "count": 1
+    },
+    {
+      "from": "0",
+      "to": "6",
+      "count": 1
+    },
+    {
+      "from": "l",
+      "to": "1",
+      "count": 1
+    },
+    {
+      "from": "3",
+      "to": "8",
+      "count": 1
     }
   ]
 }
