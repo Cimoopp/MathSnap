@@ -25,10 +25,17 @@
   5) терпение ранней остановки 6 -> 12 эпох;
   6) в отчёт добавлены источники, примеры по классам и точность по классам.
 
+Про буквы y, l, g отдельно. Прогон #9 дал по ним 56-58 примеров и точность
+75 %: EMNIST не скачался, потому что шёл через keras.datasets, а там набора
+нет (только MNIST, Fashion-MNIST и CIFAR). Сейчас EMNIST качается напрямую
+idx-файлами (data/extra_data.py), а на случай его недоступности редкие буквы
+дорисовываются шрифтом с искажениями — это не заменяет рукописные данные,
+но не даёт классу остаться с полусотней примеров.
+
 Запуск локально:
     pip install -r requirements.txt
     python data/download_data.py --out data/hasy
-    python data/inspect_dataset.py --data data
+    python data/check_sources.py
     python train/train.py --epochs 60 --per-class-cap 1200
 В облаке это делает .github/workflows/train.yml
 """
@@ -49,7 +56,7 @@ from PIL import Image
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from data.extra_data import load_emnist_letters, load_mnist  # noqa: E402
-from data.render_glyphs import render_dataset  # noqa: E402
+from data.render_glyphs import find_font_path, render_dataset, render_one  # noqa: E402
 from ocr.labels import (  # noqa: E402
     CLASS_TO_INDEX,
     CLASSES,
@@ -83,6 +90,11 @@ LABEL_EXACT = ("symbol_id", "symbolid", "symbol", "label",
 
 # Ниже этого числа примеров класс считается редким и попадает в предупреждения
 LOW_COUNT = 200
+
+# Буквы, которые при нехватке рукописных примеров дорисовываются шрифтом.
+# Отрисовка не заменяет рукописные данные: она лишь не даёт классу остаться
+# с полусотней примеров, из-за чего сеть путает «1» с «l».
+LETTER_CHARS = {"x": "x", "y": "y", "l": "l", "g": "g"}
 
 
 def empty_batch():
@@ -481,6 +493,52 @@ def limit_per_class(x, y, cap: int, seed: int = 21):
     return x[keep], y[keep]
 
 
+def top_up_letters(x, y, target: int = LOW_COUNT, seed: int = 29):
+    """Дорисовывает редкие буквы шрифтом, если рукописных примеров мало.
+
+    Нужно для случаев, когда внешний набор букв (EMNIST) недоступен: без
+    этого y, l и g остаются с полусотней примеров из HASYv2, и сеть путает
+    «1» с «l». Отрисовка не заменяет рукописные данные, но выравнивает класс.
+
+    Возвращает дополненные x, y и счётчик добавленного по классам.
+    """
+    if len(y) == 0:
+        return x, y, {}
+
+    counts = np.bincount(y, minlength=NUM_CLASSES)
+    missing = {symbol: target - int(counts[CLASS_TO_INDEX[symbol]])
+               for symbol in LETTER_CHARS
+               if counts[CLASS_TO_INDEX[symbol]] < target}
+    if not missing:
+        return x, y, {}
+
+    font_path = find_font_path()
+    if font_path is None:
+        print("[!] Шрифта нет — редкие буквы остаются как есть.")
+        return x, y, {}
+
+    rng = np.random.default_rng(seed)
+    extra_x, extra_y, added = [], [], {}
+
+    for symbol, need in missing.items():
+        for _ in range(need):
+            glyph = render_one(LETTER_CHARS[symbol], font_path, rng)
+            if glyph is None:
+                continue
+            extra_x.append(glyph)
+            extra_y.append(CLASS_TO_INDEX[symbol])
+            added[symbol] = added.get(symbol, 0) + 1
+
+    if not extra_x:
+        return x, y, {}
+
+    breakdown = ", ".join(f"{key}:{added[key]}" for key in sorted(added))
+    print(f"[i] Дорисовка редких букв шрифтом: {len(extra_x)} символов ({breakdown})")
+    return (np.concatenate([x, np.stack(extra_x).astype(np.float32)]),
+            np.concatenate([y, np.asarray(extra_y, dtype=np.int64)]),
+            added)
+
+
 def stratified_split(y, val_fraction=0.12, test_fraction=0.08, seed=13):
     """Делит данные на обучение/проверку/тест с сохранением классов.
 
@@ -665,6 +723,11 @@ def main() -> int:
     x_sets, y_sets = limit_per_class(x_sets, y_sets, cap)
     print(f"[i] После предела {cap} на класс: {len(x_sets)} символов")
 
+    # Если внешние буквы не пришли (EMNIST недоступен), дорисовываем их
+    # шрифтом: класс с пятьюдесятью примерами портит соседние (1 ↔ l).
+    x_sets, y_sets, topped_up = top_up_letters(x_sets, y_sets)
+    sources["rendered_letters"] = int(sum(topped_up.values()))
+
     if len(x_sets) == 0:
         print("[X] Ни один символ не сопоставился с метками.")
         print("    Смотри шаг «Диагностика датасета» в логе прогона.")
@@ -773,6 +836,10 @@ def main() -> int:
         "Источники данных:",
     ]
     lines += [f"  {name}: {count}" for name, count in sources.items()]
+    if topped_up:
+        lines.append("  из них дорисовано шрифтом (редкие буквы): "
+                     + ", ".join(f"{key}:{value}"
+                                 for key, value in sorted(topped_up.items())))
     lines += [
         "",
         f"Таблица меток: {label_csv.relative_to(hasy_dir)}",
