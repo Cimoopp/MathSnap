@@ -23,10 +23,11 @@ name: Train OCR model
 # Файл удалять нельзя — setup-python без него падает за секунды.
 #
 # Что печатается и где читать итоги:
-#   1) шаг «Диагностика датасета» — сколько картинок, какие таблицы и колонки;
-#   2) шаг «Обучение модели» — источники, сколько символов, шагов на эпоху;
-#   3) шаг «Итоги обучения» — точность на тесте, по классам и список путаниц.
-# Вывод дублируется в файлы train/out/*.txt и коммитится в репозиторий
+#   1) шаг «Проверка источников» — по каждому набору счётчик и причина отказа;
+#   2) шаг «Диагностика датасета» — сколько картинок, какие таблицы и колонки;
+#   3) шаг «Обучение модели» — источники, сколько символов, шагов на эпоху;
+#   4) шаг «Итоги обучения» — точность на тесте, по классам и список путаниц.
+# Вывод дублируется в файлы train/out/* и коммитится в репозиторий
 # шагом «Сохранить отчёты» — читать их можно прямо на GitHub.
 #
 # Почему раньше прогоны падали и что закрыто:
@@ -35,12 +36,16 @@ name: Train OCR model
 #      каждый следующий прогон — download_data.py проверяет архив,
 #      а кэш датасета переведён на ключ hasyv2-v2;
 #   3) кэш подготовленных картинок хранил огрызок датасета (обучение
-#      проходило за 29 секунд) — ключ переведён на mathsnap-cache-v6,
+#      проходило за 29 секунд) — ключ ведён на mathsnap-cache-v7,
 #      вместе с ним сбрасываются и старые наборы MNIST/EMNIST;
 #   4) прогон #8 дал точность 15,94 %, потому что в обучение попало 2598
 #      символов, пять классов были пусты, а лучшей оказалась первая эпоха —
 #      подключены MNIST, EMNIST и отрисовка знаков, поднят предел на класс,
-#      добавлены веса классов и стратифицированное деление.
+#      добавлены веса классов и стратифицированное деление;
+#   5) EMNIST не скачивался вовсе, а причина не сохранялась: два из трёх
+#      зеркал отдавали Git LFS-указатель и веб-страницу. Оставлено одно
+#      рабочее зеркало, причины отказов пишутся в train/out/emnist_diag.txt,
+#      а перед обучением идёт быстрая проверка источников.
 
 on:
   workflow_dispatch:
@@ -96,21 +101,22 @@ jobs:
           path: data/hasy
           key: hasyv2-v2
 
-      # Ключ v6: старый кэш мог содержать огрызок датасета,
-      # из-за которого обучение завершалось за считанные секунды,
-      # а наборы MNIST/EMNIST после смены предела надо пересобрать.
+      # Ключ v7: старый кэш мог содержать огрызок датасета,
+      # из-за которого обучение завершалось за считанные секунды.
+      # Вместе с ним пересобираются наборы MNIST и EMNIST.
       - name: Кэш подготовленных картинок
         uses: actions/cache@v4
         with:
           path: data/cache
-          key: mathsnap-cache-v6
+          key: mathsnap-cache-v7
 
-      # MNIST и EMNIST качаются один раз, дальше берутся из этого кэша.
+      # Ключ v2: в прежнем кэше могли остаться неполные файлы EMNIST,
+      # а после смены зеркал набор всё равно нужно скачать заново.
       - name: Кэш MNIST и EMNIST
         uses: actions/cache@v4
         with:
           path: data/keras
-          key: keras-datasets-v1
+          key: keras-datasets-v2
 
       - name: Зависимости
         run: |
@@ -127,6 +133,18 @@ jobs:
           sudo apt-get install -y fonts-dejavu-core 2>/dev/null \
             || (sudo apt-get update -qq && sudo apt-get install -y fonts-dejavu-core) \
             || echo "[!] Шрифт поставить не удалось — отрисовка пойдёт запасным вариантом"
+
+      # Быстрая проверка источников идёт ДО обучения: она занимает 1-2 минуты
+      # и сразу показывает, какие наборы ответили и почему не ответили
+      # остальные. Раньше про недоступный EMNIST становилось известно
+      # только по нулю в метриках через полчаса обучения.
+      # Шаг не роняет прогон: обучение продолжится на том, что доступно.
+      - name: Проверка источников
+        if: always()
+        continue-on-error: true
+        run: |
+          mkdir -p train/out
+          python data/check_sources.py 2>&1 | tee train/out/sources_check.txt
 
       # Вывод диагностики сохраняется в файл: он попадёт в репозиторий,
       # и разбирать датасет можно без скачивания логов.
@@ -155,6 +173,18 @@ jobs:
       - name: Итоги обучения
         if: always()
         run: |
+          echo "─────── проверка источников ───────"
+          if [ -f train/out/sources_check.txt ]; then
+            tail -n 40 train/out/sources_check.txt
+          else
+            echo "Файла проверки нет."
+          fi
+          echo "─────── диагностика EMNIST ───────"
+          if [ -f train/out/emnist_diag.txt ]; then
+            cat train/out/emnist_diag.txt
+          else
+            echo "Диагностики EMNIST нет: набор подключился или не запускался."
+          fi
           echo "─────── отчёт ───────"
           if [ -f train/out/report.txt ]; then
             cat train/out/report.txt
@@ -188,7 +218,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f train/out/dataset_diag.txt train/out/train_log.txt \
-                     train/out/report.txt train/out/metrics.json 2>/dev/null || true
+                     train/out/report.txt train/out/metrics.json \
+                     train/out/sources_check.txt train/out/emnist_diag.txt 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "Новых отчётов нет — коммит не нужен"
             exit 0
@@ -208,6 +239,8 @@ jobs:
             train/out/metrics.json
             train/out/report.txt
             train/out/dataset_diag.txt
+            train/out/sources_check.txt
+            train/out/emnist_diag.txt
             train/out/train_log.txt
 
       # Падение push не должно ронять джобу: модель в любом случае
