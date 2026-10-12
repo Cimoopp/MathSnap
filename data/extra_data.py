@@ -13,16 +13,38 @@
 Fashion-MNIST и CIFAR. Поэтому прошлый прогон получал по буквам ровно ноль:
 вызов tf.keras.datasets.emnist падал с AttributeError, а ошибку молча
 съедала обёртка safe_source. Здесь файлы качаются самостоятельно, в формате
-idx, с нескольких зеркал, и читаются напрямую через numpy.
+idx, и читаются напрямую через numpy.
 
-Про неполные зеркала. Набор EMNIST состоит из четырёх файлов: картинки
-и метки отдельно для train- и test-части. Зеркала отдают их неровно —
-например, test-labels на трёх проверенных зеркалах отсутствует, вместо
-архива приходит страница-заглушка. Поэтому части теперь независимы:
+Про зеркала — важное. Первые версии файла перебирали три адреса, и два из
+них оказались негодными:
+
+  * raw.githubusercontent.com/aurelienduarte/emnist — файлы лежат в Git LFS,
+    поэтому вместо архива приходит текстовый указатель «version
+    https://git-lfs.github.com/spec/v1, oid sha256:..., size ...».
+    Проверка на магию gzip его отбраковывала, но причина в отчёте не
+    сохранялась, и в метриках оставался просто ноль;
+  * raw.githubusercontent.com/akshaybahadur21/Alphabet-Recognition-EMNIST —
+    это конспект по распознаванию букв, готовых idx-файлов там нет.
+
+Поэтому зеркало осталось одно — Hugging Face, где файлы лежат по-настоящему
+и совпадают по размерам (train-images 30,8 МБ, train-labels 79,3 КБ,
+test-images 5,04 МБ, test-labels 144 байта). Если однажды и оно перестанет
+отвечать, нужен не перебор адресов, а другой набор: официальный источник
+NIST отдаёт EMNIST одним архивом gzip.zip на 500 МБ, и его распаковка
+потребует отдельной ветки кода, а не смены ссылки.
+
+Про неполные зеркала. Набор состоит из четырёх файлов: картинки и метки
+отдельно для train- и test-части. Зеркала отдают их неровно — test-labels
+весит 144 байта и встречается не везде. Поэтому части независимы:
 train- и test-часть загружаются по отдельности, недоступная пропускается
 с предупреждением, а не отбрасывает весь набор. Train-части достаточно:
-это 88 800 картинок, тогда как раньше из-за одного файла классы x, y, l, g
-оставались с 56 примерами из HASYv2.
+это 88 800 картинок, тогда как раньше из-за отсутствия EMNIST классы
+x, y, l, g оставались с 56 примерами из HASYv2.
+
+Про причины отказов. Всё, что случилось при скачивании, складывается
+в список NOTES и пишется в train/out/emnist_diag.txt, а строка emnist_error
+попадает в metrics.json. Раньше в отчёте было только «0» без объяснений,
+и приходилось догадываться, что именно не сработало.
 
 Все картинки приводятся ровно к тому же виду, что и HASYv2, и что получится
 в приложении после съёмки камерой: IMG_SIZE x IMG_SIZE, оттенки серого,
@@ -61,16 +83,59 @@ EMNIST_PARTS = (
     ("test_images", "test_labels"),
 )
 
-# Зеркала с файлами EMNIST. Официальный источник (NIST) отдаёт набор одним
-# архивом gzip.zip на 500 МБ — для прогона это лишние 10-15 минут, поэтому
-# берём отдельные файлы. Первое зеркало — Hugging Face, дальше два зеркала
-# на GitHub с теми же самыми файлами.
+# Зеркало с файлами EMNIST. Оставлено одно намеренно: прежние два адреса
+# отдавали Git LFS-указатель и страницу-конспект (подробности в заголовке
+# файла), а перебор негодных адресов лишь тратил время прогона.
 EMNIST_MIRRORS = (
     "https://huggingface.co/datasets/Royc30ne/emnist-letters/resolve/main/{file}",
-    "https://raw.githubusercontent.com/aurelienduarte/emnist/master/gzip/{file}",
-    "https://raw.githubusercontent.com/akshaybahadur21/"
-    "Alphabet-Recognition-EMNIST/master/gzip/{file}",
 )
+
+# Признаки того, что вместо архива пришёл не архив
+LFS_MARKER = b"git-lfs.github.com/spec"
+HTML_MARKERS = (b"<!DOCTYPE", b"<html", b"<?xml")
+
+# Причины отказов при скачивании: попадают в отчёт и в metrics.json
+NOTES = []
+MAX_NOTES = 8
+
+
+def _note(text: str) -> None:
+    """Запоминает причину отказа, чтобы она дошла до отчёта."""
+    short = text.strip()
+    if short and short not in NOTES and len(NOTES) < MAX_NOTES:
+        NOTES.append(short)
+
+
+def emnist_notes() -> str:
+    """Все причины отказов EMNIST одной строкой — для отчёта и метрик."""
+    return " | ".join(NOTES)
+
+
+def reset_notes() -> None:
+    """Чистит список причин перед новой попыткой загрузки."""
+    NOTES.clear()
+
+
+def write_emnist_diag(path="train/out/emnist_diag.txt") -> Path:
+    """Пишет причины отказов EMNIST отдельным файлом в репозиторий.
+
+    Файл коммитится шагом «Сохранить отчёты», поэтому причину видно
+    без скачивания артефактов и без скриншотов лога.
+    """
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    lines = ["Диагностика загрузки EMNIST letters", ""]
+    lines.append(f"Зеркал в списке: {len(EMNIST_MIRRORS)}")
+    for mirror in EMNIST_MIRRORS:
+        lines.append(f"  {mirror}")
+    lines.append("")
+    if NOTES:
+        lines.append("Причины отказов по порядку:")
+        lines += [f"  - {note}" for note in NOTES]
+    else:
+        lines.append("Отказов не зафиксировано.")
+    target.write_text("\n".join(lines), encoding="utf-8")
+    return target
 
 
 def fit_glyph(image, size: int = IMG_SIZE):
@@ -166,6 +231,24 @@ def load_mnist(per_class_cap: int = 800):
                     per_class_cap, "MNIST (цифры)")
 
 
+def _check_payload(payload: bytes, name: str) -> None:
+    """Проверяет, что скачался настоящий gzip, и объясняет, если нет.
+
+    Три отказа различаются явно, потому что лечатся по-разному:
+    LFS-указатель — зеркало не подходит вовсе, веб-страница — адрес не тот,
+    обрыв — стоит повторить попытку.
+    """
+    if not payload:
+        raise ValueError("пустой ответ")
+    if LFS_MARKER in payload[:256]:
+        raise ValueError("зеркало отдало Git LFS-указатель, а не сам архив")
+    head = payload[:64].lstrip()
+    if any(head.startswith(marker) for marker in HTML_MARKERS):
+        raise ValueError("зеркало отдало веб-страницу, а не архив")
+    if len(payload) < 1024 or payload[:2] != b"\x1f\x8b":
+        raise ValueError(f"файл не похож на gzip, размер {len(payload)} байт")
+
+
 def _download(urls, target: Path, attempts: int = 3) -> Path:
     """Скачивает файл с первого ответившего зеркала.
 
@@ -183,9 +266,10 @@ def _download(urls, target: Path, attempts: int = 3) -> Path:
     last_error = None
 
     for url in urls:
+        host = url.split("/")[2] if "//" in url else url
         for attempt in range(1, attempts + 1):
             try:
-                print(f"[i] EMNIST: качаю {url} — попытка {attempt}")
+                print(f"[i] EMNIST: качаю {host} — попытка {attempt}")
                 with urllib.request.urlopen(url, timeout=180) as response:
                     with open(part, "wb") as out:
                         while True:
@@ -195,15 +279,16 @@ def _download(urls, target: Path, attempts: int = 3) -> Path:
                             out.write(chunk)
 
                 payload = part.read_bytes()
-                if len(payload) < 1024 or payload[:2] != b"\x1f\x8b":
-                    raise ValueError("файл не похож на gzip: обрыв загрузки")
+                _check_payload(payload, target.name)
 
                 part.replace(target)
                 print(f"[i] EMNIST: {target.name} готов ({len(payload) // 1024} КБ)")
                 return target
             except Exception as error:  # noqa: BLE001 — пробуем следующее зеркало
                 last_error = error
-                print(f"[!] EMNIST: не вышло ({type(error).__name__}: {error})")
+                message = f"{host} → {target.name}: {type(error).__name__}: {error}"
+                print(f"[!] EMNIST: не вышло ({message})")
+                _note(message)
                 part.unlink(missing_ok=True)
 
     raise RuntimeError(f"ни одно зеркало не отдало {target.name}: {last_error}")
@@ -220,10 +305,10 @@ def _emnist_bytes(key: str) -> bytes:
 def _optional_emnist_bytes(key: str):
     """Байты файла EMNIST или None, если файла нет ни на одном зеркале.
 
-    Файлы набора лежат на зеркалах неровно: test-labels, например, отдаёт
-    страницу-заглушку вместо архива. Раньше из-за одного такого файла
-    отбрасывался весь набор и буквы учились на 56 примерах из HASYv2 —
-    отсюда путаница «1» с «l» и точность 75 % по l и g.
+    Файлы набора лежат на зеркалах неровно: test-labels, например, весит
+    144 байта. Раньше из-за одного такого файла отбрасывался весь набор
+    и буквы учились на 56 примерах из HASYv2 — отсюда путаница «1» с «l»
+    и точность 75 % по l и g.
 
     Теперь отсутствие файла лишь выключает соответствующую пару
     «картинки + метки», остальные части набора работают.
@@ -231,8 +316,10 @@ def _optional_emnist_bytes(key: str):
     try:
         return _emnist_bytes(key)
     except Exception as error:  # noqa: BLE001 — часть набора не критична
+        message = f"{EMNIST_FILES[key]}: {type(error).__name__}: {error}"
         print(f"[!] EMNIST: {EMNIST_FILES[key]} недоступен "
               f"({type(error).__name__}: {error}) — пропускаю эту часть")
+        _note(message)
         return None
 
 
@@ -282,7 +369,8 @@ def save_preview(x, y, path: Path, cols: int = 8, rows: int = 3):
 
 def load_emnist_letters(per_class_cap: int = 800,
                         letters=EMNIST_LETTERS,
-                        preview_path="train/out/emnist_preview.png"):
+                        preview_path="train/out/emnist_preview.png",
+                        diag_path="train/out/emnist_diag.txt"):
     """Буквы x, y, l, g из EMNIST letters — по per_class_cap на букву.
 
     Три тонкости EMNIST:
@@ -297,6 +385,7 @@ def load_emnist_letters(per_class_cap: int = 800,
     так что её примеры шумнее остальных. Поэтому она и подписана в интерфейсе
     как «буква l (для log)», а решает по ней всё равно сборка слова целиком.
     """
+    reset_notes()
     image_parts, label_parts = [], []
 
     for images_key, labels_key in EMNIST_PARTS:
@@ -313,7 +402,12 @@ def load_emnist_letters(per_class_cap: int = 800,
         print(f"[i] EMNIST: часть «{images_key}» — {usable} картинок")
 
     if not image_parts:
-        raise RuntimeError("ни одна часть EMNIST letters не скачалась")
+        # Причины отказов сохраняем до исключения: по ним видно, что именно
+        # не сработало — LFS-указатель, веб-страница или обрыв загрузки.
+        if diag_path:
+            print(f"[i] EMNIST: причины отказа — {write_emnist_diag(diag_path)}")
+        raise RuntimeError("ни одна часть EMNIST letters не скачалась: "
+                           + (emnist_notes() or "причина не зафиксирована"))
 
     images = np.concatenate(image_parts)
     labels = np.concatenate(label_parts)
@@ -332,6 +426,9 @@ def load_emnist_letters(per_class_cap: int = 800,
 
     if preview_path and len(x):
         save_preview(x, y, Path(preview_path))
+
+    if diag_path:
+        write_emnist_diag(diag_path)
 
     return x, y
 
