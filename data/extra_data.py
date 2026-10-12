@@ -5,17 +5,25 @@
 ничему: она заучивает выборку, а на проверке сваливается к угадыванию
 одного частого класса. Здесь берём два открытых набора:
 
-  * MNIST — 70 000 рукописных цифр (0..9);
-  * EMNIST letters — рукописные строчные латинские буквы, из них нам нужны
-    x, y, l и g (для log и переменных).
+  * MNIST — 70 000 рукописных цифр (0..9), качается через keras.datasets;
+  * EMNIST letters — рукописные строчные латинские буквы, из них нужны
+    x, y, l и g.
 
-Оба набора скачиваются через keras.datasets и кэшируются в ~/.keras/datasets,
-поэтому повторный прогон берёт их с диска и не тратит время на загрузку.
+Про EMNIST отдельно. В keras.datasets этого набора нет — там только MNIST,
+Fashion-MNIST и CIFAR. Поэтому прошлый прогон получал по буквам ровно ноль:
+вызов tf.keras.datasets.emnist падал с AttributeError, а ошибку молча
+съедала обёртка safe_source. Здесь файлы качаются самостоятельно, в формате
+idx, с нескольких зеркал, и читаются напрямую через numpy.
 
 Все картинки приводятся ровно к тому же виду, что и HASYv2, и что получится
 в приложении после съёмки камерой: IMG_SIZE x IMG_SIZE, оттенки серого,
 символ белым по чёрному, обрезан по границам и вписан в 75 % кадра.
 """
+
+import gzip
+import struct
+import urllib.request
+from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
@@ -25,6 +33,28 @@ from ocr.labels import CLASS_TO_INDEX, IMG_SIZE
 
 # Буквы, которые берём из EMNIST letters
 EMNIST_LETTERS = ("x", "y", "l", "g")
+
+# Куда складывать скачанные файлы: папка кэшируется в Actions
+CACHE_DIR = Path("data/keras")
+
+# Файлы EMNIST letters в формате idx (том же, что у MNIST)
+EMNIST_FILES = {
+    "train_images": "emnist-letters-train-images-idx3-ubyte.gz",
+    "train_labels": "emnist-letters-train-labels-idx1-ubyte.gz",
+    "test_images": "emnist-letters-test-images-idx3-ubyte.gz",
+    "test_labels": "emnist-letters-test-labels-idx1-ubyte.gz",
+}
+
+# Зеркала с файлами EMNIST. Официальный источник (NIST) отдаёт набор одним
+# архивом gzip.zip на 500 МБ — для прогона это лишние 10-15 минут, поэтому
+# берём отдельные файлы. Первое зеркало — Hugging Face, дальше два зеркала
+# на GitHub с теми же самыми файлами.
+EMNIST_MIRRORS = (
+    "https://huggingface.co/datasets/Royc30ne/emnist-letters/resolve/main/{file}",
+    "https://raw.githubusercontent.com/aurelienduarte/emnist/master/gzip/{file}",
+    "https://raw.githubusercontent.com/akshaybahadur21/"
+    "Alphabet-Recognition-EMNIST/master/gzip/{file}",
+)
 
 
 def fit_glyph(image, size: int = IMG_SIZE):
@@ -108,7 +138,11 @@ def _collect(images, labels, to_class, per_class_cap, name):
 
 
 def load_mnist(per_class_cap: int = 800):
-    """Цифры 0..9 из MNIST — по per_class_cap примеров на цифру."""
+    """Цифры 0..9 из MNIST — по per_class_cap примеров на цифру.
+
+    MNIST есть в keras.datasets, поэтому здесь всё просто: набор лежит
+    в ~/.keras/datasets и повторно не скачивается.
+    """
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
     images = np.concatenate([x_train, x_test])
     labels = np.concatenate([y_train, y_test])
@@ -116,24 +150,125 @@ def load_mnist(per_class_cap: int = 800):
                     per_class_cap, "MNIST (цифры)")
 
 
+def _download(urls, target: Path, attempts: int = 3) -> Path:
+    """Скачивает файл с первого ответившего зеркала.
+
+    Качаем в файл с расширением .part и переименовываем только после
+    проверки: иначе недокачанный файл сошёл бы за готовый и при следующем
+    прогоне набор бы просто не появился.
+    """
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists() and target.stat().st_size > 0:
+        print(f"[i] EMNIST: {target.name} уже готов "
+              f"({target.stat().st_size // 1024} КБ)")
+        return target
+
+    part = target.with_name(target.name + ".part")
+    last_error = None
+
+    for url in urls:
+        for attempt in range(1, attempts + 1):
+            try:
+                print(f"[i] EMNIST: качаю {url} — попытка {attempt}")
+                with urllib.request.urlopen(url, timeout=180) as response:
+                    with open(part, "wb") as out:
+                        while True:
+                            chunk = response.read(1 << 16)
+                            if not chunk:
+                                break
+                            out.write(chunk)
+
+                payload = part.read_bytes()
+                if len(payload) < 1024 or payload[:2] != b"\x1f\x8b":
+                    raise ValueError("файл не похож на gzip: обрыв загрузки")
+
+                part.replace(target)
+                print(f"[i] EMNIST: {target.name} готов ({len(payload) // 1024} КБ)")
+                return target
+            except Exception as error:  # noqa: BLE001 — пробуем следующее зеркало
+                last_error = error
+                print(f"[!] EMNIST: не вышло ({type(error).__name__}: {error})")
+                part.unlink(missing_ok=True)
+
+    raise RuntimeError(f"ни одно зеркало не отдало {target.name}: {last_error}")
+
+
+def _emnist_bytes(key: str) -> bytes:
+    """Распакованные байты одного файла EMNIST — из кэша или из сети."""
+    name = EMNIST_FILES[key]
+    urls = [mirror.format(file=name) for mirror in EMNIST_MIRRORS]
+    path = _download(urls, CACHE_DIR / name)
+    return gzip.decompress(path.read_bytes())
+
+
+def _idx_images(payload: bytes):
+    """Картинки из idx-файла: заголовок 16 байт, дальше байт на пиксель."""
+    magic, count, rows, cols = struct.unpack(">IIII", payload[:16])
+    if magic != 2051:
+        raise ValueError(f"это не idx-файл картинок: магия {magic}")
+    images = np.frombuffer(payload, dtype=np.uint8, offset=16)
+    return images.reshape(count, rows, cols)
+
+
+def _idx_labels(payload: bytes):
+    """Метки из idx-файла: заголовок 8 байт."""
+    magic, count = struct.unpack(">II", payload[:8])
+    if magic != 2049:
+        raise ValueError(f"это не idx-файл меток: магия {magic}")
+    labels = np.frombuffer(payload, dtype=np.uint8, offset=8)
+    return labels.reshape(count)
+
+
+def save_preview(x, y, path: Path, cols: int = 8, rows: int = 3):
+    """Сохраняет сетку случайных образцов набора отдельной картинкой.
+
+    Нужна для проверки глазами: EMNIST отдаёт изображения повёрнутыми
+    на 90 градусов, и ошибку в перестановке осей иначе не заметить —
+    сеть обучится и на кривых буквах, просто заметно хуже.
+    """
+    if len(x) == 0:
+        return
+
+    tile = IMG_SIZE * 4
+    canvas = Image.new("L", (cols * tile, rows * tile), 40)
+    rng = np.random.default_rng(3)
+    picks = rng.choice(len(x), size=min(rows * cols, len(x)), replace=False)
+
+    for position, index in enumerate(picks):
+        sample = Image.fromarray((x[index] * 255).astype(np.uint8))
+        sample = sample.resize((tile, tile), Image.NEAREST)
+        canvas.paste(sample, ((position % cols) * tile,
+                              (position // cols) * tile))
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    canvas.save(path)
+    print(f"[i] EMNIST: образцы для проверки — {path}")
+
+
 def load_emnist_letters(per_class_cap: int = 800,
-                        letters=EMNIST_LETTERS):
+                        letters=EMNIST_LETTERS,
+                        preview_path="train/out/emnist_preview.png"):
     """Буквы x, y, l, g из EMNIST letters — по per_class_cap на букву.
 
     Две тонкости EMNIST:
-      1) в keras-версии картинки лежат транспонированными, поэтому их нужно
-         переставить осями, иначе буквы окажутся повёрнутыми на 90 градусов;
-      2) метки бывают сдвинуты на единицу (a = 1), поэтому сдвиг определяется
+      1) картинки хранятся повёрнутыми и отражёнными, поэтому оси нужно
+         переставить, иначе буквы окажутся повёрнутыми на 90 градусов;
+      2) метки начинаются с единицы (a = 1), поэтому сдвиг определяется
          по минимальной метке, а не задаётся жёстко.
 
     Про класс «l» отдельно: в EMNIST буква l идёт вместе с написаниями L и 1,
     так что её примеры шумнее остальных. Поэтому она и подписана в интерфейсе
     как «буква l (для log)», а решает по ней всё равно сборка слова целиком.
     """
-    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.emnist.load_data(
-        "letters")
-    images = np.transpose(np.concatenate([x_train, x_test]), (0, 2, 1))
-    labels = np.concatenate([y_train, y_test])
+    images = np.concatenate([
+        _idx_images(_emnist_bytes("train_images")),
+        _idx_images(_emnist_bytes("test_images")),
+    ])
+    labels = np.concatenate([
+        _idx_labels(_emnist_bytes("train_labels")),
+        _idx_labels(_emnist_bytes("test_labels")),
+    ])
+    images = np.transpose(images, (0, 2, 1))
 
     letters = {name for name in letters if name in CLASS_TO_INDEX}
     first = int(labels.min())
@@ -143,8 +278,13 @@ def load_emnist_letters(per_class_cap: int = 800,
         name = alphabet.get(int(value))
         return name if name in letters else None
 
-    return _collect(images, labels, to_class, per_class_cap,
+    x, y = _collect(images, labels, to_class, per_class_cap,
                     f"EMNIST (буквы {'/'.join(sorted(letters))})")
+
+    if preview_path and len(x):
+        save_preview(x, y, Path(preview_path))
+
+    return x, y
 
 
 if __name__ == "__main__":
