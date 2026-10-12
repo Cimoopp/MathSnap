@@ -4,12 +4,19 @@
 Выход: assets/model.tflite (лежит внутри APK) и отчёт с метриками.
 
 Режим подобран под бесплатный ранер GitHub (2 ядра):
-вход 32x32, до 500 примеров на класс, подготовленные картинки кэшируются
+вход 32x32, до 400 примеров на класс, подготовленные картинки кэшируются
 в data/cache, чтобы повторный прогон не тратил время на препроцессинг.
 
+Про таблицы датасета: в архиве HASYv2 лежит несколько CSV, и нужная
+выбирается автоматически — по числу строк, которые совпали с нашими
+классами. Метка может быть задана LaTeX-ом или номером символа
+(тогда номер расшифровывается через symbols.csv). Картинка ищется
+по имени файла из колонки path, по точному пути или по номеру картинки.
+
 Запуск локально:
-    pip install "tensorflow-cpu==2.15.1" pillow numpy
+    pip install -r requirements.txt
     python data/download_data.py --out data/hasy
+    python data/inspect_dataset.py --data data
     python train/train.py --epochs 60
 В облаке это делает .github/workflows/train.yml
 """
@@ -49,29 +56,209 @@ LATEX_MAP = {
     "l": "l", "g": "g",
 }
 
-# Имена колонок с меткой и с номером картинки в разных выгрузках датасета
-ID_KEYS = ("image_id", "id", "imageId")
-LATEX_KEYS = ("latex", "label", "symbol")
-
 IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".webp", ".bmp")
 
+# Имена колонок, которые встречаются в разных выгрузках датасета
+PATH_EXACT = ("path", "filepath", "file_name", "filename", "file",
+              "image_path", "img_path", "png", "image")
+PATH_PARTIAL = ("path", "file")
+ID_EXACT = ("image_id", "imageid", "img_id", "imgid", "id")
+LABEL_EXACT = ("symbol_id", "symbolid", "symbol", "label",
+               "class", "class_id", "label_id", "target")
 
-def first_value(row: dict, keys) -> str:
-    """Возвращает первое непустое значение из строки таблицы по списку имён колонок."""
-    for key in keys:
-        value = row.get(key)
-        if value is not None and str(value).strip() != "":
-            return str(value).strip()
+
+def norm_row(row) -> dict:
+    """Приводит имена колонок строки к нижнему регистру и убирает пробелы."""
+    result = {}
+    for key, value in (row or {}).items():
+        if key is None:
+            continue
+        result[key.strip().lower()] = (value or "").strip()
+    return result
+
+
+def read_header(path: Path):
+    """Возвращает нормализованные имена колонок таблицы."""
+    with open(path, newline="", encoding="utf-8", errors="replace") as f:
+        return [h.strip().lower() for h in next(csv.reader(f), [])]
+
+
+def as_int(value):
+    """Число из строки или None, если это не число."""
+    try:
+        return int(float(value))
+    except (TypeError, ValueError):
+        return None
+
+
+def pick_exact(row: dict, names):
+    for name in names:
+        value = row.get(name)
+        if value:
+            return value
     return ""
 
 
-def latex_to_class(latex: str) -> str | None:
-    """Переводит latex-метку HASYv2 в наш класс или None, если символ не нужен."""
-    key = (latex or "").strip()
-    return LATEX_MAP.get(key)
+def pick_contains(row: dict, fragments):
+    for key, value in row.items():
+        if value and any(fragment in key for fragment in fragments):
+            return value
+    return ""
 
 
-def load_glyph(path: Path, size: int = IMG_SIZE) -> np.ndarray | None:
+def latex_to_class(latex):
+    """Переводит latex-метку в наш класс или None, если символ не нужен."""
+    if not latex:
+        return None
+    key = latex.strip().strip("$")
+    for junk in (r"\left", r"\right", r"\,"):
+        key = key.replace(junk, "")
+    return LATEX_MAP.get(key.strip())
+
+
+def read_symbols_map(path: Path) -> dict:
+    """Читает таблицу символов: номер символа -> LaTeX."""
+    table = {}
+    header = read_header(path)
+    latex_key = next((name for name in header if "latex" in name), None)
+    id_key = next((name for name in header if name in
+                   ("symbol_id", "symbolid", "symbol", "id", "class_id")), None)
+    if latex_key is None or id_key is None:
+        return table
+
+    with open(path, newline="", encoding="utf-8", errors="replace") as f:
+        for row in csv.DictReader(f):
+            row = norm_row(row)
+            number = as_int(row.get(id_key, ""))
+            latex = row.get(latex_key, "")
+            if number is not None and latex:
+                table[number] = latex
+    return table
+
+
+def build_label_getter(header, symbols_map):
+    """Собирает функцию «строка таблицы -> LaTeX-метка».
+
+    Метка может лежать в колонке latex, либо в колонке с номером символа
+    (тогда номер расшифровывается через symbols_map).
+    """
+    latex_key = next((name for name in header if "latex" in name), None)
+    label_key = next((name for name in header if name in LABEL_EXACT), None)
+    if label_key is None:
+        label_key = next((name for name in header
+                          if any(f in name for f in ("symbol", "label", "class", "target"))
+                          and "latex" not in name), None)
+    if latex_key is None and label_key is None:
+        return None
+
+    def getter(row: dict):
+        for key in (latex_key, label_key):
+            if not key:
+                continue
+            value = row.get(key, "")
+            if not value:
+                continue
+            number = as_int(value)
+            if number is None:
+                return value
+            mapped = symbols_map.get(number)
+            if mapped:
+                return mapped
+        return None
+
+    return getter
+
+
+def pick_label_csv(hasy_dir: Path):
+    """Выбирает таблицу с метками: берёт ту, где совпало больше всего символов.
+
+    Такой выбор не зависит от порядка файлов в архиве и от того, как
+    названы колонки. Служебные разбивки (classification-task) обычно
+    содержат меньше наших символов и проигрывают полной таблице.
+    """
+    csv_files = sorted(hasy_dir.rglob("*.csv"))
+    if not csv_files:
+        return None, {}
+
+    # Сначала ищем таблицу-расшифровку «номер символа -> LaTeX»
+    symbols_map = {}
+    for path in csv_files:
+        header = read_header(path)
+        is_plain_table = (not any(name in PATH_EXACT or any(f in name for f in PATH_PARTIAL)
+                                  for name in header))
+        if is_plain_table and any("latex" in name for name in header):
+            table = read_symbols_map(path)
+            if len(table) > len(symbols_map):
+                symbols_map = table
+                print(f"[i] Расшифровка символов: {path.name} — {len(table)} записей")
+
+    best_path, best_matched = None, 0
+    for path in csv_files:
+        header = read_header(path)
+        if not header:
+            continue
+
+        has_path = any(name in PATH_EXACT or any(f in name for f in PATH_PARTIAL)
+                       for name in header)
+        has_id = any(name in ID_EXACT for name in header)
+        if not (has_path or has_id):
+            print(f"[i] {path.relative_to(hasy_dir)} — не про картинки, пропускаю")
+            continue
+
+        getter = build_label_getter(header, symbols_map)
+        if getter is None:
+            print(f"[i] {path.relative_to(hasy_dir)} — колонки с метками нет, пропускаю")
+            continue
+
+        total = matched = 0
+        with open(path, newline="", encoding="utf-8", errors="replace") as f:
+            for row in csv.DictReader(f):
+                total += 1
+                if latex_to_class(getter(norm_row(row))) is not None:
+                    matched += 1
+
+        print(f"[i] {path.relative_to(hasy_dir)}: строк {total}, наших символов {matched}")
+        if matched > best_matched:
+            best_path, best_matched = path, matched
+
+    return best_path, symbols_map
+
+
+def build_image_indexes(hasy_dir: Path):
+    """Индексы картинок: по имени файла и по числу из имени (v2-00042 -> 42)."""
+    by_name = {}
+    by_digits = {}
+    for path in hasy_dir.rglob("*"):
+        if path.suffix.lower() not in IMAGE_EXTENSIONS:
+            continue
+        by_name.setdefault(path.name, path)
+        digits = re.sub(r"\D", "", path.stem)
+        if digits:
+            by_digits.setdefault(int(digits), path)
+    return by_name, by_digits
+
+
+def resolve_image(row: dict, hasy_dir: Path, indexes):
+    """Ищет файл картинки для одной строки таблицы."""
+    by_name, by_digits = indexes
+
+    raw = pick_exact(row, PATH_EXACT) or pick_contains(row, PATH_PARTIAL)
+    if raw:
+        name = Path(raw.replace("\\", "/")).name
+        hit = by_name.get(name)
+        if hit is not None:
+            return hit
+        candidate = hasy_dir / raw
+        if candidate.exists():
+            return candidate
+
+    number = as_int(pick_exact(row, ID_EXACT))
+    if number is not None:
+        return by_digits.get(number)
+    return None
+
+
+def load_glyph(path: Path, size: int = IMG_SIZE):
     """Готовит одно изображение символа к подаче в сеть.
 
     Шаги: оттенки серого -> бинаризация -> обрезка по границам символа ->
@@ -107,37 +294,33 @@ def load_glyph(path: Path, size: int = IMG_SIZE) -> np.ndarray | None:
     return np.asarray(canvas, dtype=np.float32) / 255.0
 
 
-def index_images(base: Path) -> dict[int, Path]:
-    """Индекс картинок датасета по числу из имени файла (v2-00042.png -> 42)."""
-    index: dict[int, Path] = {}
-    for path in base.rglob("*"):
-        if path.suffix.lower() not in IMAGE_EXTENSIONS:
-            continue
-        digits = re.sub(r"\D", "", path.stem)
-        if digits:
-            index.setdefault(int(digits), path)
-    return index
+def load_hasy(csv_path: Path, hasy_dir: Path, symbols_map: dict, per_class_cap: int):
+    """Читает датасет: таблица с метками + папка с картинками."""
+    indexes = build_image_indexes(hasy_dir)
+    print(f"[i] Картинок в датасете: {len(indexes[0])}")
 
+    getter = build_label_getter(read_header(csv_path), symbols_map)
+    if getter is None:
+        print("[X] В выбранной таблице не нашлось колонки с метками.")
+        return (np.zeros((0, IMG_SIZE, IMG_SIZE), dtype=np.float32),
+                np.zeros((0,), dtype=np.int64), {})
 
-def load_hasy(csv_path: Path, base: Path, per_class_cap: int):
-    """Читает HASYv2: CSV с метками + папку с картинками."""
-    images = index_images(base)
     features, labels, per_class = [], [], {}
+    no_image = 0
 
-    with open(csv_path, newline="", encoding="utf-8") as f:
+    with open(csv_path, newline="", encoding="utf-8", errors="replace") as f:
         for row in csv.DictReader(f):
-            # В HASYv2 колонка с номером картинки называется image_id,
-            # но встречаются выгрузки с id/imageId — берём любую из них.
-            raw_id = first_value(row, ID_KEYS)
+            row = norm_row(row)
 
-            symbol = latex_to_class(first_value(row, LATEX_KEYS))
+            symbol = latex_to_class(getter(row))
             if symbol is None:
                 continue
             if per_class.get(symbol, 0) >= per_class_cap:
                 continue
 
-            path = images.get(int(raw_id)) if raw_id.isdigit() else None
+            path = resolve_image(row, hasy_dir, indexes)
             if path is None:
+                no_image += 1
                 continue
 
             glyph = load_glyph(path)
@@ -148,6 +331,9 @@ def load_hasy(csv_path: Path, base: Path, per_class_cap: int):
             labels.append(CLASS_TO_INDEX[symbol])
             per_class[symbol] = per_class.get(symbol, 0) + 1
 
+    if no_image:
+        print(f"[!] Для {no_image} строк с нашей меткой не нашлась картинка")
+
     if features:
         x = np.stack(features)
         y = np.asarray(labels, dtype=np.int64)
@@ -157,7 +343,8 @@ def load_hasy(csv_path: Path, base: Path, per_class_cap: int):
     return x, y, per_class
 
 
-def load_hasy_cached(csv_path: Path, base: Path, per_class_cap: int, cache_path: Path):
+def load_hasy_cached(csv_path: Path, hasy_dir: Path, symbols_map: dict,
+                     per_class_cap: int, cache_path: Path):
     """То же, что load_hasy, но с кэшем на диск: препроцессинг идёт один раз."""
     if cache_path.exists():
         try:
@@ -170,7 +357,7 @@ def load_hasy_cached(csv_path: Path, base: Path, per_class_cap: int, cache_path:
         except Exception as error:  # noqa: BLE001 — кэш не критичен, готовим заново
             print(f"[!] Кэш не прочитался ({error}) — готовлю символы заново")
 
-    x, y, per_class = load_hasy(csv_path, base, per_class_cap)
+    x, y, per_class = load_hasy(csv_path, hasy_dir, symbols_map, per_class_cap)
 
     if len(x):
         cache_path.parent.mkdir(parents=True, exist_ok=True)
@@ -269,7 +456,7 @@ def main() -> int:
     parser.add_argument("--data", default="data", help="папка с данными")
     parser.add_argument("--epochs", type=int, default=60)
     parser.add_argument("--batch", type=int, default=128)
-    parser.add_argument("--per-class-cap", type=int, default=500,
+    parser.add_argument("--per-class-cap", type=int, default=400,
                         help="предел примеров на класс — чтобы частые символы не перевесили")
     parser.add_argument("--out", default="assets/model.tflite")
     parser.add_argument("--report-dir", default="train/out")
@@ -282,24 +469,30 @@ def main() -> int:
     data_dir = Path(args.data)
     hasy_dir = data_dir / "hasy"
 
-    csv_files = sorted(hasy_dir.rglob("*.csv")) if hasy_dir.exists() else []
-    if not csv_files:
-        print(f"[X] Не нашёл таблицу с метками в {hasy_dir}.")
+    if not hasy_dir.exists():
+        print(f"[X] Не нашёл папку датасета {hasy_dir}.")
         print("    Сначала: python data/download_data.py --out data/hasy")
         return 1
 
-    print(f"Читаю датасет: {csv_files[0]}")
-    cache_path = data_dir / "cache" / f"glyphs_{IMG_SIZE}_{args.per_class_cap}.npz"
+    label_csv, symbols_map = pick_label_csv(hasy_dir)
+    if label_csv is None:
+        print("[X] Ни одна таблица не подошла под наши метки. Вот что есть:")
+        for path in sorted(hasy_dir.rglob("*.csv")):
+            print(f"    - {path.relative_to(hasy_dir)}: {read_header(path)}")
+        return 1
+    print(f"[i] Таблица меток: {label_csv.relative_to(hasy_dir)}")
+
+    cache_path = data_dir / "cache" / f"glyphs_{IMG_SIZE}_{args.per_class_cap}_{label_csv.stem}.npz"
     if args.no_cache and cache_path.exists():
         cache_path.unlink()
 
     x_hasy, y_hasy, per_class = load_hasy_cached(
-        csv_files[0], csv_files[0].parent, args.per_class_cap, cache_path)
+        label_csv, hasy_dir, symbols_map, args.per_class_cap, cache_path)
     print(f"[i] Из датасета взято {len(x_hasy)} символов")
 
     if len(x_hasy) == 0:
         print("[X] Ни один символ не сопоставился с метками.")
-        print("    Проверь названия колонок в таблице и распаковку картинок.")
+        print("    Смотри шаг «Диагностика датасета» в логе прогона.")
         return 1
 
     x_mine, y_mine = load_handwritten(data_dir / "handwritten")
@@ -370,6 +563,7 @@ def main() -> int:
 
     lines = [
         "Отчёт обучения MathSnap",
+        f"Таблица меток: {label_csv.relative_to(hasy_dir)}",
         f"Символов всего: {len(x)}",
         f"Классов: {len(CLASSES)}",
         f"Вход: {IMG_SIZE}x{IMG_SIZE}, параметров: {model.count_params()}",
@@ -396,6 +590,7 @@ def main() -> int:
         "epochs_done": len(history.history.get("loss", [])),
         "minutes": round(minutes, 1),
         "tflite_bytes": size,
+        "label_csv": str(label_csv.relative_to(hasy_dir)),
         "top_mistakes": [{"from": a, "to": b, "count": c} for (a, b), c in top_mistakes],
     }
     (report_dir / "metrics.json").write_text(
