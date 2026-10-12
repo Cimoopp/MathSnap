@@ -10,6 +10,9 @@ name: Train OCR model
 # кэшируются в data/cache. Лимит джобы 355 минут: на 32x32 эпоха проходит
 # за 0,6-1,2 мин, то есть 60 эпох — это 36-72 мин, плюс скачивание датасета
 # и установка зависимостей. Ранняя остановка обычно закрывает прогон раньше.
+#
+# Зависимости лежат в requirements.txt в корне: его требует кэш pip.
+# Файл удалять нельзя — setup-python без него падает за секунды.
 
 on:
   workflow_dispatch:
@@ -47,6 +50,7 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
+          cache-dependency-path: requirements.txt
 
       - name: Кэш датасета HASYv2
         uses: actions/cache@v4
@@ -63,7 +67,7 @@ jobs:
       - name: Зависимости
         run: |
           python -m pip install --upgrade pip
-          pip install "tensorflow-cpu==2.15.1" pillow numpy
+          pip install -r requirements.txt
 
       - name: Датасет рукописных символов
         run: python data/download_data.py --out data/hasy
