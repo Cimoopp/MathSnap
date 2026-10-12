@@ -9,11 +9,18 @@ name: Train OCR model
 # Режим обучения: вход 32x32, до 400 примеров на класс, готовые картинки
 # кэшируются в data/cache. Лимит джобы 355 минут: на 32x32 эпоха проходит
 # за 0,6-1,2 мин, то есть 60 эпох — это 36-72 мин, плюс датасет и зависимости.
-# Ранняя остановка обычно закрывает прогон раньше. Упавший ранее прогон
-# упёрся в 300 минут — здесь лимит выше, а нагрузка ниже.
+# Ранняя остановка обычно закрывает прогон раньше.
 #
 # Зависимости лежат в requirements.txt в корне: его требует кэш pip.
 # Файл удалять нельзя — setup-python без него падает за секунды.
+#
+# Почему раньше прогоны падали и что закрыто:
+#   1) setup-python падал без requirements.txt — файл добавлен;
+#   2) битый (недокачанный) архив датасета закреплялся в кэше и ронял
+#      каждый следующий прогон — download_data.py теперь проверяет архив
+#      и удаляет мусор, а кэш datаcета переведён на новый ключ hasyv2-v2;
+#   3) не было видно итогов без артефактов — добавлен шаг «Итоги обучения»,
+#      он печатает точность, число символов и список путаниц прямо в лог.
 
 on:
   workflow_dispatch:
@@ -58,18 +65,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: data/hasy
-          key: hasyv2-v1
+          key: hasyv2-v2
 
       - name: Кэш подготовленных картинок
         uses: actions/cache@v4
         with:
           path: data/cache
-          key: mathsnap-cache-v3
+          key: mathsnap-cache-v4
 
       - name: Зависимости
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install --retries 5 --timeout 60 -r requirements.txt
 
       - name: Датасет рукописных символов
         run: python data/download_data.py --out data/hasy
@@ -87,6 +94,33 @@ jobs:
             --batch 128 \
             --out assets/model.tflite \
             --report-dir train/out
+
+      # Итоги печатаем в лог: артефакты скачивать неудобно, а цифры нужны сразу.
+      - name: Итоги обучения
+        if: always()
+        run: |
+          echo "─────── отчёт ───────"
+          if [ -f train/out/report.txt ]; then
+            cat train/out/report.txt
+          else
+            echo "Отчёта нет: обучение не дошло до конца."
+          fi
+          echo "─────── метрики ───────"
+          if [ -f train/out/metrics.json ]; then
+            cat train/out/metrics.json
+          else
+            echo "metrics.json нет."
+          fi
+          echo "─────── модель ───────"
+          if [ -f assets/model.tflite ]; then
+            ls -l assets/model.tflite
+            size=$(stat -c%s assets/model.tflite)
+            if [ "$size" -lt 10000 ]; then
+              echo "[!] Модель подозрительно маленькая: $size байт"
+            fi
+          else
+            echo "Модели нет: обучение не дошло до сохранения."
+          fi
 
       - name: Артефакты обучения
         if: always()
