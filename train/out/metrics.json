@@ -1,0 +1,74 @@
+{
+  "accuracy": 0.1594,
+  "loss": 2.9887,
+  "samples": 2598,
+  "classes": 23,
+  "img_size": 32,
+  "params": 173807,
+  "epochs_done": 7,
+  "minutes": 0.2,
+  "tflite_bytes": 184472,
+  "label_csv": "hasy-data-labels.csv",
+  "top_mistakes": [
+    {
+      "from": "/",
+      "to": "sqrt",
+      "count": 30
+    },
+    {
+      "from": "x",
+      "to": "/",
+      "count": 19
+    },
+    {
+      "from": "x",
+      "to": "sqrt",
+      "count": 14
+    },
+    {
+      "from": "0",
+      "to": "sqrt",
+      "count": 13
+    },
+    {
+      "from": "-",
+      "to": "sqrt",
+      "count": 12
+    },
+    {
+      "from": "9",
+      "to": "sqrt",
+      "count": 10
+    },
+    {
+      "from": "3",
+      "to": "sqrt",
+      "count": 9
+    },
+    {
+      "from": "2",
+      "to": "sqrt",
+      "count": 9
+    },
+    {
+      "from": "1",
+      "to": "sqrt",
+      "count": 7
+    },
+    {
+      "from": "8",
+      "to": "sqrt",
+      "count": 6
+    },
+    {
+      "from": "g",
+      "to": "sqrt",
+      "count": 6
+    },
+    {
+      "from": "4",
+      "to": "sqrt",
+      "count": 5
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+[i] Расшифровка символов: symbols.csv — 369 записей
+[i] classification-task/fold-1/test.csv: строк 16992, наших символов 565
+[i] classification-task/fold-1/train.csv: строк 151241, наших символов 5008
+[i] classification-task/fold-10/test.csv: строк 16661, наших символов 548
+[i] classification-task/fold-10/train.csv: строк 151572, наших символов 5025
+[i] classification-task/fold-2/test.csv: строк 16945, наших символов 563
+[i] classification-task/fold-2/train.csv: строк 151288, наших символов 5010
+[i] classification-task/fold-3/test.csv: строк 16913, наших символов 562
+[i] classification-task/fold-3/train.csv: строк 151320, наших символов 5011
+[i] classification-task/fold-4/test.csv: строк 16875, наших символов 561
+[i] classification-task/fold-4/train.csv: строк 151358, наших символов 5012
+[i] classification-task/fold-5/test.csv: строк 16838, наших символов 560
+[i] classification-task/fold-5/train.csv: строк 151395, наших символов 5013
+[i] classification-task/fold-6/test.csv: строк 16810, наших символов 557
+[i] classification-task/fold-6/train.csv: строк 151423, наших символов 5016
+[i] classification-task/fold-7/test.csv: строк 16769, наших символов 554
+[i] classification-task/fold-7/train.csv: строк 151464, наших символов 5019
+[i] classification-task/fold-8/test.csv: строк 16732, наших символов 554
+[i] classification-task/fold-8/train.csv: строк 151501, наших символов 5019
+[i] classification-task/fold-9/test.csv: строк 16698, наших символов 549
+[i] classification-task/fold-9/train.csv: строк 151535, наших символов 5024
+[i] hasy-data-labels.csv: строк 168233, наших символов 5573
+[i] symbols.csv — не про картинки, пропускаю
+[i] verification-task/test-v1.csv — колонки с метками нет, пропускаю
+[i] verification-task/test-v2.csv — колонки с метками нет, пропускаю
+[i] verification-task/test-v3.csv — колонки с метками нет, пропускаю
+[i] verification-task/train.csv: строк 150985, наших символов 5254
+[i] Таблица меток: hasy-data-labels.csv
+[i] Картинок в датасете: 168233
+[i] Символы сохранены в кэш: data/cache/glyphs_32_400_hasy-data-labels.npz
+[i] Из датасета взято 2598 символов
+[i] Папки со своими фото нет (data/handwritten) — учусь только на датасете.
+[i] Всего символов: 2598 → обучение 2080, проверка 311, тест 207
+[i] Шагов на эпоху: 16 (батч 128, вход 32x32)
+[!] Мало примеров для «0»: 133. Добавь свои фото в data/handwritten/0/
+[!] Мало примеров для «1»: 118. Добавь свои фото в data/handwritten/1/
+[!] Мало примеров для «2»: 124. Добавь свои фото в data/handwritten/2/
+[!] Мало примеров для «3»: 120. Добавь свои фото в data/handwritten/3/
+[!] Мало примеров для «4»: 61. Добавь свои фото в data/handwritten/4/
+[!] Мало примеров для «5»: 78. Добавь свои фото в data/handwritten/5/
+[!] Мало примеров для «6»: 100. Добавь свои фото в data/handwritten/6/
+[!] Мало примеров для «7»: 75. Добавь свои фото в data/handwritten/7/
+[!] Мало примеров для «8»: 121. Добавь свои фото в data/handwritten/8/
+[!] Мало примеров для «9»: 90. Добавь свои фото в data/handwritten/9/
+[!] Мало примеров для «+»: 90. Добавь свои фото в data/handwritten/+/
+[!] Мало примеров для «-»: 118. Добавь свои фото в data/handwritten/-/
+[!] Мало примеров для «=»: 0. Добавь свои фото в data/handwritten/=/
+[!] Мало примеров для «(»: 0. Добавь свои фото в data/handwritten/(/
+[!] Мало примеров для «)»: 0. Добавь свои фото в data/handwritten/)/
+[!] Мало примеров для «игрек»: 58. Добавь свои фото в data/handwritten/y/
+[!] Мало примеров для «десятичная точка»: 0. Добавь свои фото в data/handwritten/./
+[!] Мало примеров для «степень»: 0. Добавь свои фото в data/handwritten/^/
+[!] Мало примеров для «буква l (для log)»: 56. Добавь свои фото в data/handwritten/l/
+[!] Мало примеров для «буква g (для log)»: 56. Добавь свои фото в data/handwritten/g/
+[i] Параметров в модели: 173807
+Epoch 1/60
+
+Epoch 1: val_accuracy improved from -inf to 0.16399, saving model to train/out/best.keras
+17/17 - 3s - loss: 2.5239 - accuracy: 0.3053 - val_loss: 2.9832 - val_accuracy: 0.1640 - lr: 0.0010 - 3s/epoch - 171ms/step
+Epoch 2/60
+
+Epoch 2: val_accuracy did not improve from 0.16399
+17/17 - 2s - loss: 1.7310 - accuracy: 0.4918 - val_loss: 3.0584 - val_accuracy: 0.0322 - lr: 0.0010 - 2s/epoch - 97ms/step
+Epoch 3/60
+
+Epoch 3: val_accuracy did not improve from 0.16399
+17/17 - 2s - loss: 1.3129 - accuracy: 0.6149 - val_loss: 3.9060 - val_accuracy: 0.0322 - lr: 0.0010 - 2s/epoch - 95ms/step
+Epoch 4/60
+
+Epoch 4: val_accuracy did not improve from 0.16399
+
+Epoch 4: ReduceLROnPlateau reducing learning rate to 0.0005000000237487257.
+17/17 - 2s - loss: 1.0310 - accuracy: 0.7106 - val_loss: 4.4466 - val_accuracy: 0.0322 - lr: 0.0010 - 2s/epoch - 97ms/step
+Epoch 5/60
+
+Epoch 5: val_accuracy did not improve from 0.16399
+17/17 - 2s - loss: 0.8353 - accuracy: 0.7582 - val_loss: 4.5693 - val_accuracy: 0.0322 - lr: 5.0000e-04 - 2s/epoch - 96ms/step
+Epoch 6/60
+
+Epoch 6: val_accuracy did not improve from 0.16399
+17/17 - 2s - loss: 0.7314 - accuracy: 0.8014 - val_loss: 4.5215 - val_accuracy: 0.0322 - lr: 5.0000e-04 - 2s/epoch - 95ms/step
+Epoch 7/60
+
+Epoch 7: val_accuracy did not improve from 0.16399
+Restoring model weights from the end of the best epoch: 1.
+
+Epoch 7: ReduceLROnPlateau reducing learning rate to 0.0002500000118743628.
+17/17 - 2s - loss: 0.6470 - accuracy: 0.8236 - val_loss: 5.0514 - val_accuracy: 0.0322 - lr: 5.0000e-04 - 2s/epoch - 96ms/step
+Epoch 7: early stopping
+
+Тест: точность 15.94 %, ошибка 2.989
+Время обучения: 0.2 мин
+Summary on the non-converted ops:
+---------------------------------
+ * Accepted dialects: tfl, builtin, func
+ * Non-Converted Ops: 10, Total Ops 33, % non-converted = 30.30 %
+ * 10 ARITH ops
+
+- arith.constant:   10 occurrences  (f32: 9, i32: 1)
+
+
+
+  (f32: 6)
+  (f32: 2)
+  (f32: 3)
+  (f32: 1)
+  (uq_8: 7)
+  (f32: 1)
+Отчёт обучения MathSnap
+Таблица меток: hasy-data-labels.csv
+Символов всего: 2598
+Классов: 23
+Вход: 32x32, параметров: 173807
+Эпох пройдено: 7
+Время обучения: 0.2 мин
+Точность на тесте: 15.94 %
+
+Частые ошибки (что приняли за что):
+  / → sqrt: 30 раз
+  x → /: 19 раз
+  x → sqrt: 14 раз
+  0 → sqrt: 13 раз
+  - → sqrt: 12 раз
+  9 → sqrt: 10 раз
+  3 → sqrt: 9 раз
+  2 → sqrt: 9 раз
+  1 → sqrt: 7 раз
+  8 → sqrt: 6 раз
+  g → sqrt: 6 раз
+  4 → sqrt: 5 раз
+
+Веса: 180.1 КБ → assets/model.tflite
+Отчёт: train/out/report.txt

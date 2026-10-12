@@ -1,0 +1,151 @@
+Датасет: data/hasy
+
+Верхний уровень:
+  HASYv2.tar.bz2 — 34.6 МБ
+  README.txt — 0.0 МБ
+  classification-task/ — файлов: 20
+  hasy-data/ — файлов: 168233
+  hasy-data-labels.csv — 7.0 МБ
+  hasy_tools.py — 0.0 МБ
+  symbols.csv — 0.0 МБ
+  verification-task/ — файлов: 4
+
+Изображений: 168233
+  пример: hasy-data/v2-164330.png
+  пример: hasy-data/v2-52516.png
+  пример: hasy-data/v2-150906.png
+
+Таблиц CSV: 26
+
+  classification-task/fold-1/test.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-00000.png', '31', 'A', '50']
+    строка:  ['../../hasy-data/v2-00001.png', '31', 'A', '10']
+
+  classification-task/fold-1/train.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-00016.png', '31', 'A', '8071']
+    строка:  ['../../hasy-data/v2-00017.png', '31', 'A', '9505']
+
+  classification-task/fold-10/test.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-17196.png', '31', 'A', '16925']
+    строка:  ['../../hasy-data/v2-17197.png', '31', 'A', '16925']
+
+  classification-task/fold-10/train.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-00000.png', '31', 'A', '50']
+    строка:  ['../../hasy-data/v2-00001.png', '31', 'A', '10']
+
+  classification-task/fold-2/test.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-00016.png', '31', 'A', '8071']
+    строка:  ['../../hasy-data/v2-00017.png', '31', 'A', '9505']
+
+  classification-task/fold-2/train.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-00000.png', '31', 'A', '50']
+    строка:  ['../../hasy-data/v2-00001.png', '31', 'A', '10']
+
+  classification-task/fold-3/test.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-17084.png', '31', 'A', '43']
+    строка:  ['../../hasy-data/v2-17085.png', '31', 'A', '43']
+
+  classification-task/fold-3/train.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-00000.png', '31', 'A', '50']
+    строка:  ['../../hasy-data/v2-00001.png', '31', 'A', '10']
+
+  classification-task/fold-4/test.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-17100.png', '31', 'A', '1710']
+    строка:  ['../../hasy-data/v2-17101.png', '31', 'A', '3328']
+
+  classification-task/fold-4/train.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-00000.png', '31', 'A', '50']
+    строка:  ['../../hasy-data/v2-00001.png', '31', 'A', '10']
+
+  classification-task/fold-5/test.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-17116.png', '31', 'A', '5981']
+    строка:  ['../../hasy-data/v2-17117.png', '31', 'A', '5981']
+
+  classification-task/fold-5/train.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-00000.png', '31', 'A', '50']
+    строка:  ['../../hasy-data/v2-00001.png', '31', 'A', '10']
+
+  classification-task/fold-6/test.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-17132.png', '31', 'A', '5981']
+    строка:  ['../../hasy-data/v2-17133.png', '31', 'A', '5981']
+
+  classification-task/fold-6/train.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-00000.png', '31', 'A', '50']
+    строка:  ['../../hasy-data/v2-00001.png', '31', 'A', '10']
+
+  classification-task/fold-7/test.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-17148.png', '31', 'A', '5981']
+    строка:  ['../../hasy-data/v2-17149.png', '31', 'A', '5981']
+
+  classification-task/fold-7/train.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-00000.png', '31', 'A', '50']
+    строка:  ['../../hasy-data/v2-00001.png', '31', 'A', '10']
+
+  classification-task/fold-8/test.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-17164.png', '31', 'A', '1696']
+    строка:  ['../../hasy-data/v2-17165.png', '31', 'A', '7940']
+
+  classification-task/fold-8/train.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-00000.png', '31', 'A', '50']
+    строка:  ['../../hasy-data/v2-00001.png', '31', 'A', '10']
+
+  classification-task/fold-9/test.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-17180.png', '31', 'A', '9283']
+    строка:  ['../../hasy-data/v2-17181.png', '31', 'A', '9283']
+
+  classification-task/fold-9/train.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../../hasy-data/v2-00000.png', '31', 'A', '50']
+    строка:  ['../../hasy-data/v2-00001.png', '31', 'A', '10']
+
+  hasy-data-labels.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['hasy-data/v2-00000.png', '31', 'A', '50']
+    строка:  ['hasy-data/v2-00001.png', '31', 'A', '10']
+
+  symbols.csv
+    колонки: ['symbol_id', 'latex', 'training_samples', 'test_samples']
+    строка:  ['31', 'A', '137', '22']
+    строка:  ['32', 'B', '53', '8']
+
+  verification-task/test-v1.csv
+    колонки: ['path1', 'path2', 'is_same']
+    строка:  ['../hasy-data/v2-66621.png', '../hasy-data/v2-66621.png', 'True']
+    строка:  ['../hasy-data/v2-112676.png', '../hasy-data/v2-112450.png', 'True']
+
+  verification-task/test-v2.csv
+    колонки: ['path1', 'path2', 'is_same']
+    строка:  ['../hasy-data/v2-30275.png', '../hasy-data/v2-86334.png', 'False']
+    строка:  ['../hasy-data/v2-30457.png', '../hasy-data/v2-30457.png', 'True']
+
+  verification-task/test-v3.csv
+    колонки: ['path1', 'path2', 'is_same']
+    строка:  ['../hasy-data/v2-130899.png', '../hasy-data/v2-65788.png', 'False']
+    строка:  ['../hasy-data/v2-105396.png', '../hasy-data/v2-86695.png', 'False']
+
+  verification-task/train.csv
+    колонки: ['path', 'symbol_id', 'latex', 'user_id']
+    строка:  ['../hasy-data/v2-141258.png', '950', '\\emptyset', '16925']
+    строка:  ['../hasy-data/v2-69988.png', '265', '\\&', '16925']
+
+Готово. Если в таблице нет колонки с LaTeX-метками,
+train.py возьмёт колонку symbol_id и расшифрует её через symbols.csv.
