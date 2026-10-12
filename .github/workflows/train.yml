@@ -1,15 +1,16 @@
 name: Train OCR model
 
 # Обучение своей модели распознавания символов в облаке.
-# Запуск: вручную — Actions → Train OCR model → Run workflow,
-# либо push в train/** или в этот файл.
-# Заливка своих фото в data/handwritten/ обучение НЕ запускает: минуты
-# Actions в приватном репозитории ограничены, поэтому запуск только осознанный.
+# Обычный запуск: вручную — Actions → Train OCR model → Run workflow.
+# Этот файл трогаем редко: любая правка в нём запускает обучение сама,
+# так как минуты Actions в приватном репозитории ограничены (2000 в месяц).
+# Заливка своих фото в data/handwritten/ обучение НЕ запускает.
 #
 # Режим обучения: вход 32x32, до 400 примеров на класс, готовые картинки
 # кэшируются в data/cache. Лимит джобы 355 минут: на 32x32 эпоха проходит
-# за 0,6-1,2 мин, то есть 60 эпох — это 36-72 мин, плюс скачивание датасета
-# и установка зависимостей. Ранняя остановка обычно закрывает прогон раньше.
+# за 0,6-1,2 мин, то есть 60 эпох — это 36-72 мин, плюс датасет и зависимости.
+# Ранняя остановка обычно закрывает прогон раньше. Упавший ранее прогон
+# упёрся в 300 минут — здесь лимит выше, а нагрузка ниже.
 #
 # Зависимости лежат в requirements.txt в корне: его требует кэш pip.
 # Файл удалять нельзя — setup-python без него падает за секунды.
@@ -23,7 +24,6 @@ on:
         default: "60"
   push:
     paths:
-      - "train/**"
       - ".github/workflows/train.yml"
 
 # Два обучения одновременно не запускаем: это экономит минуты аккаунта.
@@ -42,6 +42,8 @@ jobs:
     env:
       # Меньше служебного шума в логах, логи компактнее — они тоже лимитированы
       TF_CPP_MIN_LOG_LEVEL: "3"
+      # Печать идёт сразу, а не в конце: при срыве по времени лог не теряется
+      PYTHONUNBUFFERED: "1"
 
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +64,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: data/cache
-          key: mathsnap-cache-v2
+          key: mathsnap-cache-v3
 
       - name: Зависимости
         run: |
@@ -71,6 +73,10 @@ jobs:
 
       - name: Датасет рукописных символов
         run: python data/download_data.py --out data/hasy
+
+      - name: Диагностика датасета
+        if: always()
+        run: python data/inspect_dataset.py --data data
 
       - name: Обучение модели
         run: |
@@ -93,11 +99,18 @@ jobs:
             train/out/metrics.json
             train/out/report.txt
 
+      # Падение push не должно ронять джобу: модель в любом случае
+      # остаётся в артефактах и её можно закоммитить руками.
       - name: Сохранить модель в репозиторий
         if: success()
+        continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ ! -f assets/model.tflite ]; then
+            echo "Модели нет — коммитить нечего"
+            exit 0
+          fi
           git add assets/model.tflite
           if git diff --cached --quiet; then
             echo "Модель не изменилась — коммит не нужен"
