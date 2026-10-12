@@ -31,6 +31,11 @@ def build_model(num_classes: int = NUM_CLASSES, img_size: int = IMG_SIZE,
     Фильтры 24/48/96 подобраны под раннер GitHub без видеокарты:
     ядро обучения — 32x32 пикселя, поэтому сеть остаётся лёгкой
     даже при 23 классах, а на телефоне инференс идёт миллисекунды.
+
+    weighted_metrics=[] выставлено намеренно: обучение идёт с весами классов
+    (sample_weights в tf.data), и без этого Keras на каждой эпохе печатает
+    шесть строк предупреждения. Метрики при этом считаются без весов —
+    как и до этой правки, меняется только шум в логе.
     """
     inputs = tf.keras.Input(shape=(img_size, img_size, 1), name="glyph")
 
@@ -50,6 +55,7 @@ def build_model(num_classes: int = NUM_CLASSES, img_size: int = IMG_SIZE,
         optimizer=tf.keras.optimizers.Adam(learning_rate),
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"],
+        weighted_metrics=[],
     )
     return model
 
