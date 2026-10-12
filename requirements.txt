@@ -1,0 +1,6 @@
+# Зависимости обучения модели распознавания символов (train/train.py).
+# Нужны для кэша pip в actions/setup-python: без этого файла шаг падает с
+# ошибкой "No file matched to [**/requirements.txt or **/pyproject.toml]".
+tensorflow-cpu==2.15.1
+pillow>=10.0.0
+numpy>=1.24,<2.0
