@@ -26,17 +26,36 @@
 [i] verification-task/test-v3.csv — колонки с метками нет, пропускаю
 [i] verification-task/train.csv: строк 150985, наших символов 5254
 [i] Таблица меток: hasy-data-labels.csv
-[i] Картинок в датасете: 168233
-[i] Символы сохранены в кэш: data/cache/glyphs_32_1200_hasy-data-labels.npz
+[i] Готовые символы из кэша: 4443 штук (glyphs_32_1200_hasy-data-labels.npz)
 [i] Из датасета взято 4443 символов
-Downloading data from https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz
-    8192/11490434 [..............................] - ETA: 0s 4333568/11490434 [==========>...................] - ETA: 0s11490434/11490434 [==============================] - 0s 0us/step
-[i] MNIST (цифры): взято 12000 символов (0:1200, 1:1200, 2:1200, 3:1200, 4:1200, 5:1200, 6:1200, 7:1200, 8:1200, 9:1200)
-[i] MNIST (цифры): 12000 символов сохранено в кэш (mnist_32_1200.npz)
-[!] EMNIST (буквы x/y/l/g): данные недоступны (AttributeError: module 'keras.api._v2.keras.datasets' has no attribute 'emnist')
+[i] MNIST (цифры): 12000 символов из кэша (mnist_32_1200.npz)
+[i] EMNIST: качаю https://huggingface.co/datasets/Royc30ne/emnist-letters/resolve/main/emnist-letters-train-images-idx3-ubyte.gz — попытка 1
+[i] EMNIST: emnist-letters-train-images-idx3-ubyte.gz готов (30082 КБ)
+[i] EMNIST: качаю https://huggingface.co/datasets/Royc30ne/emnist-letters/resolve/main/emnist-letters-test-images-idx3-ubyte.gz — попытка 1
+[i] EMNIST: emnist-letters-test-images-idx3-ubyte.gz готов (4921 КБ)
+[i] EMNIST: качаю https://huggingface.co/datasets/Royc30ne/emnist-letters/resolve/main/emnist-letters-train-labels-idx1-ubyte.gz — попытка 1
+[i] EMNIST: emnist-letters-train-labels-idx1-ubyte.gz готов (77 КБ)
+[i] EMNIST: качаю https://huggingface.co/datasets/Royc30ne/emnist-letters/resolve/main/emnist-letters-test-labels-idx1-ubyte.gz — попытка 1
+[!] EMNIST: не вышло (ValueError: файл не похож на gzip: обрыв загрузки)
+[i] EMNIST: качаю https://huggingface.co/datasets/Royc30ne/emnist-letters/resolve/main/emnist-letters-test-labels-idx1-ubyte.gz — попытка 2
+[!] EMNIST: не вышло (ValueError: файл не похож на gzip: обрыв загрузки)
+[i] EMNIST: качаю https://huggingface.co/datasets/Royc30ne/emnist-letters/resolve/main/emnist-letters-test-labels-idx1-ubyte.gz — попытка 3
+[!] EMNIST: не вышло (ValueError: файл не похож на gzip: обрыв загрузки)
+[i] EMNIST: качаю https://raw.githubusercontent.com/aurelienduarte/emnist/master/gzip/emnist-letters-test-labels-idx1-ubyte.gz — попытка 1
+[!] EMNIST: не вышло (ValueError: файл не похож на gzip: обрыв загрузки)
+[i] EMNIST: качаю https://raw.githubusercontent.com/aurelienduarte/emnist/master/gzip/emnist-letters-test-labels-idx1-ubyte.gz — попытка 2
+[!] EMNIST: не вышло (ValueError: файл не похож на gzip: обрыв загрузки)
+[i] EMNIST: качаю https://raw.githubusercontent.com/aurelienduarte/emnist/master/gzip/emnist-letters-test-labels-idx1-ubyte.gz — попытка 3
+[!] EMNIST: не вышло (ValueError: файл не похож на gzip: обрыв загрузки)
+[i] EMNIST: качаю https://raw.githubusercontent.com/akshaybahadur21/Alphabet-Recognition-EMNIST/master/gzip/emnist-letters-test-labels-idx1-ubyte.gz — попытка 1
+[!] EMNIST: не вышло (ValueError: файл не похож на gzip: обрыв загрузки)
+[i] EMNIST: качаю https://raw.githubusercontent.com/akshaybahadur21/Alphabet-Recognition-EMNIST/master/gzip/emnist-letters-test-labels-idx1-ubyte.gz — попытка 2
+[!] EMNIST: не вышло (ValueError: файл не похож на gzip: обрыв загрузки)
+[i] EMNIST: качаю https://raw.githubusercontent.com/akshaybahadur21/Alphabet-Recognition-EMNIST/master/gzip/emnist-letters-test-labels-idx1-ubyte.gz — попытка 3
+[!] EMNIST: не вышло (ValueError: файл не похож на gzip: обрыв загрузки)
+[!] EMNIST (буквы x/y/l/g): данные недоступны (RuntimeError: ни одно зеркало не отдало emnist-letters-test-labels-idx1-ubyte.gz: файл не похож на gzip: обрыв загрузки)
     Продолжаю обучение без источника «EMNIST (буквы x/y/l/g)».
-[i] Отрисовка шрифтом: 10800 символов ((:1200, ):1200, +:1200, -:1200, .:1200, /:1200, =:1200, ^:1200, sqrt:1200)
-[i] Отрисовка шрифтом (знаки): 10800 символов сохранено в кэш (rendered_32_1200.npz)
+[i] Отрисовка шрифтом (знаки): 10800 символов из кэша (rendered_32_1200.npz)
 [i] Наборы вместе: 27243 символов
 [i] После предела 1200 на класс: 24170 символов
 [i] Папки со своими фото нет (data/handwritten) — учусь только на наборах.
@@ -51,320 +70,272 @@ Epoch 1/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
 Epoch 1: val_accuracy improved from -inf to 0.00241, saving model to train/out/best.keras
-152/152 - 30s - loss: 1.7766 - accuracy: 0.4778 - val_loss: 4.5648 - val_accuracy: 0.0024 - lr: 0.0010 - 30s/epoch - 199ms/step
+152/152 - 31s - loss: 1.7550 - accuracy: 0.4805 - val_loss: 4.5410 - val_accuracy: 0.0024 - lr: 0.0010 - 31s/epoch - 201ms/step
 Epoch 2/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 2: val_accuracy improved from 0.00241 to 0.25991, saving model to train/out/best.keras
-152/152 - 28s - loss: 0.6862 - accuracy: 0.8075 - val_loss: 2.4055 - val_accuracy: 0.2599 - lr: 0.0010 - 28s/epoch - 184ms/step
+Epoch 2: val_accuracy improved from 0.00241 to 0.38780, saving model to train/out/best.keras
+152/152 - 30s - loss: 0.6821 - accuracy: 0.8112 - val_loss: 2.2719 - val_accuracy: 0.3878 - lr: 0.0010 - 30s/epoch - 197ms/step
 Epoch 3/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 3: val_accuracy improved from 0.25991 to 0.80938, saving model to train/out/best.keras
-152/152 - 29s - loss: 0.4071 - accuracy: 0.8902 - val_loss: 0.5677 - val_accuracy: 0.8094 - lr: 0.0010 - 29s/epoch - 189ms/step
+Epoch 3: val_accuracy improved from 0.38780 to 0.81868, saving model to train/out/best.keras
+152/152 - 29s - loss: 0.4029 - accuracy: 0.8928 - val_loss: 0.5112 - val_accuracy: 0.8187 - lr: 0.0010 - 29s/epoch - 194ms/step
 Epoch 4/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 4: val_accuracy improved from 0.80938 to 0.90210, saving model to train/out/best.keras
-152/152 - 29s - loss: 0.3171 - accuracy: 0.9135 - val_loss: 0.3390 - val_accuracy: 0.9021 - lr: 0.0010 - 29s/epoch - 191ms/step
+Epoch 4: val_accuracy improved from 0.81868 to 0.88280, saving model to train/out/best.keras
+152/152 - 30s - loss: 0.3053 - accuracy: 0.9156 - val_loss: 0.3224 - val_accuracy: 0.8828 - lr: 0.0010 - 30s/epoch - 195ms/step
 Epoch 5/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 5: val_accuracy improved from 0.90210 to 0.92106, saving model to train/out/best.keras
-152/152 - 29s - loss: 0.2657 - accuracy: 0.9286 - val_loss: 0.2768 - val_accuracy: 0.9211 - lr: 0.0010 - 29s/epoch - 191ms/step
+Epoch 5: val_accuracy did not improve from 0.88280
+152/152 - 30s - loss: 0.2645 - accuracy: 0.9272 - val_loss: 0.5086 - val_accuracy: 0.8566 - lr: 0.0010 - 30s/epoch - 194ms/step
 Epoch 6/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 6: val_accuracy did not improve from 0.92106
-152/152 - 29s - loss: 0.2225 - accuracy: 0.9419 - val_loss: 0.3216 - val_accuracy: 0.9007 - lr: 0.0010 - 29s/epoch - 189ms/step
+Epoch 6: val_accuracy improved from 0.88280 to 0.96001, saving model to train/out/best.keras
+152/152 - 29s - loss: 0.1982 - accuracy: 0.9459 - val_loss: 0.1240 - val_accuracy: 0.9600 - lr: 0.0010 - 29s/epoch - 194ms/step
 Epoch 7/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 7: val_accuracy improved from 0.92106 to 0.94623, saving model to train/out/best.keras
-152/152 - 29s - loss: 0.1992 - accuracy: 0.9461 - val_loss: 0.1711 - val_accuracy: 0.9462 - lr: 0.0010 - 29s/epoch - 190ms/step
+Epoch 7: val_accuracy did not improve from 0.96001
+152/152 - 29s - loss: 0.1927 - accuracy: 0.9500 - val_loss: 0.1848 - val_accuracy: 0.9431 - lr: 0.0010 - 29s/epoch - 193ms/step
 Epoch 8/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 8: val_accuracy did not improve from 0.94623
-152/152 - 29s - loss: 0.1987 - accuracy: 0.9478 - val_loss: 0.2909 - val_accuracy: 0.9218 - lr: 0.0010 - 29s/epoch - 190ms/step
+Epoch 8: val_accuracy did not improve from 0.96001
+152/152 - 30s - loss: 0.1792 - accuracy: 0.9492 - val_loss: 0.2134 - val_accuracy: 0.9311 - lr: 0.0010 - 30s/epoch - 194ms/step
 Epoch 9/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 9: val_accuracy did not improve from 0.94623
-152/152 - 29s - loss: 0.1771 - accuracy: 0.9483 - val_loss: 0.1655 - val_accuracy: 0.9462 - lr: 0.0010 - 29s/epoch - 188ms/step
+Epoch 9: val_accuracy improved from 0.96001 to 0.96898, saving model to train/out/best.keras
+152/152 - 29s - loss: 0.1623 - accuracy: 0.9516 - val_loss: 0.1145 - val_accuracy: 0.9690 - lr: 0.0010 - 29s/epoch - 194ms/step
 Epoch 10/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 10: val_accuracy improved from 0.94623 to 0.97932, saving model to train/out/best.keras
-152/152 - 29s - loss: 0.1285 - accuracy: 0.9620 - val_loss: 0.0793 - val_accuracy: 0.9793 - lr: 0.0010 - 29s/epoch - 190ms/step
+Epoch 10: val_accuracy did not improve from 0.96898
+152/152 - 29s - loss: 0.1262 - accuracy: 0.9646 - val_loss: 0.2054 - val_accuracy: 0.9383 - lr: 0.0010 - 29s/epoch - 194ms/step
 Epoch 11/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 11: val_accuracy did not improve from 0.97932
-152/152 - 29s - loss: 0.1490 - accuracy: 0.9577 - val_loss: 0.2663 - val_accuracy: 0.9376 - lr: 0.0010 - 29s/epoch - 190ms/step
+Epoch 11: val_accuracy did not improve from 0.96898
+152/152 - 29s - loss: 0.1397 - accuracy: 0.9597 - val_loss: 0.2895 - val_accuracy: 0.9128 - lr: 0.0010 - 29s/epoch - 193ms/step
 Epoch 12/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 12: val_accuracy did not improve from 0.97932
-152/152 - 29s - loss: 0.1251 - accuracy: 0.9638 - val_loss: 0.1468 - val_accuracy: 0.9566 - lr: 0.0010 - 29s/epoch - 188ms/step
+Epoch 12: val_accuracy did not improve from 0.96898
+152/152 - 30s - loss: 0.1354 - accuracy: 0.9624 - val_loss: 0.8853 - val_accuracy: 0.7260 - lr: 0.0010 - 30s/epoch - 194ms/step
 Epoch 13/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 13: val_accuracy did not improve from 0.97932
-152/152 - 29s - loss: 0.1081 - accuracy: 0.9682 - val_loss: 0.0809 - val_accuracy: 0.9772 - lr: 0.0010 - 29s/epoch - 190ms/step
+Epoch 13: val_accuracy did not improve from 0.96898
+
+Epoch 13: ReduceLROnPlateau reducing learning rate to 0.0005000000237487257.
+152/152 - 29s - loss: 0.1056 - accuracy: 0.9696 - val_loss: 0.1352 - val_accuracy: 0.9597 - lr: 0.0010 - 29s/epoch - 192ms/step
 Epoch 14/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 14: val_accuracy did not improve from 0.97932
-
-Epoch 14: ReduceLROnPlateau reducing learning rate to 0.0005000000237487257.
-152/152 - 29s - loss: 0.1077 - accuracy: 0.9686 - val_loss: 0.1997 - val_accuracy: 0.9452 - lr: 0.0010 - 29s/epoch - 189ms/step
+Epoch 14: val_accuracy improved from 0.96898 to 0.98656, saving model to train/out/best.keras
+152/152 - 29s - loss: 0.0975 - accuracy: 0.9705 - val_loss: 0.0466 - val_accuracy: 0.9866 - lr: 5.0000e-04 - 29s/epoch - 192ms/step
 Epoch 15/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 15: val_accuracy did not improve from 0.97932
-152/152 - 29s - loss: 0.0736 - accuracy: 0.9773 - val_loss: 0.1060 - val_accuracy: 0.9717 - lr: 5.0000e-04 - 29s/epoch - 189ms/step
+Epoch 15: val_accuracy did not improve from 0.98656
+152/152 - 29s - loss: 0.0660 - accuracy: 0.9796 - val_loss: 0.0901 - val_accuracy: 0.9748 - lr: 5.0000e-04 - 29s/epoch - 192ms/step
 Epoch 16/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 16: val_accuracy improved from 0.97932 to 0.98621, saving model to train/out/best.keras
-152/152 - 29s - loss: 0.0939 - accuracy: 0.9721 - val_loss: 0.0483 - val_accuracy: 0.9862 - lr: 5.0000e-04 - 29s/epoch - 192ms/step
+Epoch 16: val_accuracy did not improve from 0.98656
+152/152 - 29s - loss: 0.0888 - accuracy: 0.9744 - val_loss: 0.0482 - val_accuracy: 0.9862 - lr: 5.0000e-04 - 29s/epoch - 192ms/step
 Epoch 17/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 17: val_accuracy did not improve from 0.98621
-152/152 - 29s - loss: 0.0678 - accuracy: 0.9808 - val_loss: 0.0496 - val_accuracy: 0.9852 - lr: 5.0000e-04 - 29s/epoch - 193ms/step
+Epoch 17: val_accuracy improved from 0.98656 to 0.98931, saving model to train/out/best.keras
+152/152 - 30s - loss: 0.0742 - accuracy: 0.9784 - val_loss: 0.0480 - val_accuracy: 0.9893 - lr: 5.0000e-04 - 30s/epoch - 198ms/step
 Epoch 18/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 18: val_accuracy did not improve from 0.98621
-152/152 - 29s - loss: 0.0727 - accuracy: 0.9787 - val_loss: 0.0634 - val_accuracy: 0.9828 - lr: 5.0000e-04 - 29s/epoch - 192ms/step
+Epoch 18: val_accuracy did not improve from 0.98931
+
+Epoch 18: ReduceLROnPlateau reducing learning rate to 0.0002500000118743628.
+152/152 - 30s - loss: 0.0733 - accuracy: 0.9782 - val_loss: 0.2011 - val_accuracy: 0.9448 - lr: 5.0000e-04 - 30s/epoch - 196ms/step
 Epoch 19/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 19: val_accuracy did not improve from 0.98621
-152/152 - 29s - loss: 0.0785 - accuracy: 0.9773 - val_loss: 0.0491 - val_accuracy: 0.9841 - lr: 5.0000e-04 - 29s/epoch - 193ms/step
+Epoch 19: val_accuracy did not improve from 0.98931
+152/152 - 29s - loss: 0.0651 - accuracy: 0.9799 - val_loss: 0.0395 - val_accuracy: 0.9893 - lr: 2.5000e-04 - 29s/epoch - 191ms/step
 Epoch 20/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 20: val_accuracy did not improve from 0.98621
-
-Epoch 20: ReduceLROnPlateau reducing learning rate to 0.0002500000118743628.
-152/152 - 29s - loss: 0.0698 - accuracy: 0.9806 - val_loss: 0.1647 - val_accuracy: 0.9548 - lr: 5.0000e-04 - 29s/epoch - 192ms/step
+Epoch 20: val_accuracy did not improve from 0.98931
+152/152 - 29s - loss: 0.0553 - accuracy: 0.9832 - val_loss: 0.0509 - val_accuracy: 0.9879 - lr: 2.5000e-04 - 29s/epoch - 190ms/step
 Epoch 21/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 21: val_accuracy did not improve from 0.98621
-152/152 - 29s - loss: 0.0608 - accuracy: 0.9821 - val_loss: 0.0552 - val_accuracy: 0.9862 - lr: 2.5000e-04 - 29s/epoch - 192ms/step
+Epoch 21: val_accuracy did not improve from 0.98931
+152/152 - 30s - loss: 0.0521 - accuracy: 0.9850 - val_loss: 0.0689 - val_accuracy: 0.9807 - lr: 2.5000e-04 - 30s/epoch - 195ms/step
 Epoch 22/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 22: val_accuracy improved from 0.98621 to 0.98931, saving model to train/out/best.keras
-152/152 - 29s - loss: 0.0616 - accuracy: 0.9810 - val_loss: 0.0415 - val_accuracy: 0.9893 - lr: 2.5000e-04 - 29s/epoch - 190ms/step
+Epoch 22: val_accuracy improved from 0.98931 to 0.99035, saving model to train/out/best.keras
+152/152 - 29s - loss: 0.0603 - accuracy: 0.9826 - val_loss: 0.0397 - val_accuracy: 0.9903 - lr: 2.5000e-04 - 29s/epoch - 194ms/step
 Epoch 23/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 23: val_accuracy did not improve from 0.98931
-152/152 - 29s - loss: 0.0559 - accuracy: 0.9826 - val_loss: 0.0443 - val_accuracy: 0.9869 - lr: 2.5000e-04 - 29s/epoch - 192ms/step
+Epoch 23: val_accuracy did not improve from 0.99035
+
+Epoch 23: ReduceLROnPlateau reducing learning rate to 0.0001250000059371814.
+152/152 - 29s - loss: 0.0524 - accuracy: 0.9845 - val_loss: 0.0411 - val_accuracy: 0.9893 - lr: 2.5000e-04 - 29s/epoch - 193ms/step
 Epoch 24/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 24: val_accuracy did not improve from 0.98931
-152/152 - 29s - loss: 0.0487 - accuracy: 0.9855 - val_loss: 0.0450 - val_accuracy: 0.9872 - lr: 2.5000e-04 - 29s/epoch - 191ms/step
+Epoch 24: val_accuracy improved from 0.99035 to 0.99069, saving model to train/out/best.keras
+152/152 - 29s - loss: 0.0459 - accuracy: 0.9866 - val_loss: 0.0402 - val_accuracy: 0.9907 - lr: 1.2500e-04 - 29s/epoch - 193ms/step
 Epoch 25/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 25: val_accuracy improved from 0.98931 to 0.99000, saving model to train/out/best.keras
-152/152 - 29s - loss: 0.0501 - accuracy: 0.9847 - val_loss: 0.0405 - val_accuracy: 0.9900 - lr: 2.5000e-04 - 29s/epoch - 190ms/step
+Epoch 25: val_accuracy did not improve from 0.99069
+152/152 - 30s - loss: 0.0446 - accuracy: 0.9869 - val_loss: 0.0419 - val_accuracy: 0.9897 - lr: 1.2500e-04 - 30s/epoch - 194ms/step
 Epoch 26/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 26: val_accuracy did not improve from 0.99000
-152/152 - 29s - loss: 0.0472 - accuracy: 0.9854 - val_loss: 0.0599 - val_accuracy: 0.9855 - lr: 2.5000e-04 - 29s/epoch - 190ms/step
+Epoch 26: val_accuracy did not improve from 0.99069
+152/152 - 30s - loss: 0.0448 - accuracy: 0.9862 - val_loss: 0.0446 - val_accuracy: 0.9900 - lr: 1.2500e-04 - 30s/epoch - 197ms/step
 Epoch 27/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 27: val_accuracy did not improve from 0.99000
-152/152 - 29s - loss: 0.0456 - accuracy: 0.9862 - val_loss: 0.0526 - val_accuracy: 0.9862 - lr: 2.5000e-04 - 29s/epoch - 192ms/step
+Epoch 27: val_accuracy did not improve from 0.99069
+
+Epoch 27: ReduceLROnPlateau reducing learning rate to 6.25000029685907e-05.
+152/152 - 29s - loss: 0.0462 - accuracy: 0.9865 - val_loss: 0.0442 - val_accuracy: 0.9900 - lr: 1.2500e-04 - 29s/epoch - 193ms/step
 Epoch 28/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 28: val_accuracy improved from 0.99000 to 0.99069, saving model to train/out/best.keras
-152/152 - 30s - loss: 0.0493 - accuracy: 0.9845 - val_loss: 0.0396 - val_accuracy: 0.9907 - lr: 2.5000e-04 - 30s/epoch - 194ms/step
+Epoch 28: val_accuracy improved from 0.99069 to 0.99242, saving model to train/out/best.keras
+152/152 - 30s - loss: 0.0473 - accuracy: 0.9852 - val_loss: 0.0363 - val_accuracy: 0.9924 - lr: 6.2500e-05 - 30s/epoch - 198ms/step
 Epoch 29/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 29: val_accuracy did not improve from 0.99069
-152/152 - 29s - loss: 0.0475 - accuracy: 0.9862 - val_loss: 0.0421 - val_accuracy: 0.9879 - lr: 2.5000e-04 - 29s/epoch - 192ms/step
+Epoch 29: val_accuracy did not improve from 0.99242
+152/152 - 30s - loss: 0.0410 - accuracy: 0.9881 - val_loss: 0.0396 - val_accuracy: 0.9903 - lr: 6.2500e-05 - 30s/epoch - 196ms/step
 Epoch 30/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 30: val_accuracy did not improve from 0.99069
-152/152 - 29s - loss: 0.0433 - accuracy: 0.9867 - val_loss: 0.0397 - val_accuracy: 0.9900 - lr: 2.5000e-04 - 29s/epoch - 188ms/step
+Epoch 30: val_accuracy did not improve from 0.99242
+152/152 - 29s - loss: 0.0395 - accuracy: 0.9887 - val_loss: 0.0409 - val_accuracy: 0.9907 - lr: 6.2500e-05 - 29s/epoch - 193ms/step
 Epoch 31/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 31: val_accuracy improved from 0.99069 to 0.99138, saving model to train/out/best.keras
-152/152 - 29s - loss: 0.0439 - accuracy: 0.9866 - val_loss: 0.0382 - val_accuracy: 0.9914 - lr: 2.5000e-04 - 29s/epoch - 189ms/step
+Epoch 31: val_accuracy did not improve from 0.99242
+152/152 - 29s - loss: 0.0400 - accuracy: 0.9880 - val_loss: 0.0358 - val_accuracy: 0.9921 - lr: 6.2500e-05 - 29s/epoch - 193ms/step
 Epoch 32/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 32: val_accuracy did not improve from 0.99138
-152/152 - 29s - loss: 0.0573 - accuracy: 0.9825 - val_loss: 0.0730 - val_accuracy: 0.9804 - lr: 2.5000e-04 - 29s/epoch - 190ms/step
+Epoch 32: val_accuracy did not improve from 0.99242
+152/152 - 30s - loss: 0.0463 - accuracy: 0.9878 - val_loss: 0.0396 - val_accuracy: 0.9903 - lr: 6.2500e-05 - 30s/epoch - 195ms/step
 Epoch 33/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 33: val_accuracy did not improve from 0.99138
-152/152 - 29s - loss: 0.0509 - accuracy: 0.9857 - val_loss: 0.0456 - val_accuracy: 0.9869 - lr: 2.5000e-04 - 29s/epoch - 190ms/step
+Epoch 33: val_accuracy did not improve from 0.99242
+152/152 - 30s - loss: 0.0405 - accuracy: 0.9879 - val_loss: 0.0396 - val_accuracy: 0.9900 - lr: 6.2500e-05 - 30s/epoch - 196ms/step
 Epoch 34/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 34: val_accuracy did not improve from 0.99138
-152/152 - 29s - loss: 0.0368 - accuracy: 0.9894 - val_loss: 0.0416 - val_accuracy: 0.9886 - lr: 2.5000e-04 - 29s/epoch - 193ms/step
+Epoch 34: val_accuracy did not improve from 0.99242
+152/152 - 30s - loss: 0.0399 - accuracy: 0.9887 - val_loss: 0.0376 - val_accuracy: 0.9921 - lr: 6.2500e-05 - 30s/epoch - 196ms/step
 Epoch 35/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 35: val_accuracy did not improve from 0.99138
-152/152 - 29s - loss: 0.0447 - accuracy: 0.9858 - val_loss: 0.0377 - val_accuracy: 0.9910 - lr: 2.5000e-04 - 29s/epoch - 193ms/step
+Epoch 35: val_accuracy did not improve from 0.99242
+
+Epoch 35: ReduceLROnPlateau reducing learning rate to 3.125000148429535e-05.
+152/152 - 29s - loss: 0.0402 - accuracy: 0.9884 - val_loss: 0.0362 - val_accuracy: 0.9914 - lr: 6.2500e-05 - 29s/epoch - 194ms/step
 Epoch 36/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 36: val_accuracy did not improve from 0.99138
-152/152 - 29s - loss: 0.0413 - accuracy: 0.9875 - val_loss: 0.0584 - val_accuracy: 0.9845 - lr: 2.5000e-04 - 29s/epoch - 193ms/step
+Epoch 36: val_accuracy did not improve from 0.99242
+152/152 - 30s - loss: 0.0387 - accuracy: 0.9885 - val_loss: 0.0357 - val_accuracy: 0.9917 - lr: 3.1250e-05 - 30s/epoch - 194ms/step
 Epoch 37/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 37: val_accuracy did not improve from 0.99138
-152/152 - 29s - loss: 0.0400 - accuracy: 0.9875 - val_loss: 0.0575 - val_accuracy: 0.9852 - lr: 2.5000e-04 - 29s/epoch - 189ms/step
+Epoch 37: val_accuracy did not improve from 0.99242
+152/152 - 29s - loss: 0.0380 - accuracy: 0.9888 - val_loss: 0.0360 - val_accuracy: 0.9921 - lr: 3.1250e-05 - 29s/epoch - 192ms/step
 Epoch 38/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 38: val_accuracy did not improve from 0.99138
-152/152 - 29s - loss: 0.0405 - accuracy: 0.9888 - val_loss: 0.0411 - val_accuracy: 0.9907 - lr: 2.5000e-04 - 29s/epoch - 190ms/step
+Epoch 38: val_accuracy improved from 0.99242 to 0.99311, saving model to train/out/best.keras
+152/152 - 29s - loss: 0.0368 - accuracy: 0.9886 - val_loss: 0.0343 - val_accuracy: 0.9931 - lr: 3.1250e-05 - 29s/epoch - 193ms/step
 Epoch 39/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 39: val_accuracy did not improve from 0.99138
-
-Epoch 39: ReduceLROnPlateau reducing learning rate to 0.0001250000059371814.
-152/152 - 29s - loss: 0.0352 - accuracy: 0.9893 - val_loss: 0.0400 - val_accuracy: 0.9903 - lr: 2.5000e-04 - 29s/epoch - 192ms/step
+Epoch 39: val_accuracy did not improve from 0.99311
+152/152 - 29s - loss: 0.0414 - accuracy: 0.9881 - val_loss: 0.0355 - val_accuracy: 0.9917 - lr: 3.1250e-05 - 29s/epoch - 194ms/step
 Epoch 40/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 40: val_accuracy did not improve from 0.99138
-152/152 - 29s - loss: 0.0382 - accuracy: 0.9888 - val_loss: 0.0438 - val_accuracy: 0.9900 - lr: 1.2500e-04 - 29s/epoch - 193ms/step
+Epoch 40: val_accuracy did not improve from 0.99311
+152/152 - 30s - loss: 0.0355 - accuracy: 0.9892 - val_loss: 0.0357 - val_accuracy: 0.9924 - lr: 3.1250e-05 - 30s/epoch - 195ms/step
 Epoch 41/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 41: val_accuracy improved from 0.99138 to 0.99173, saving model to train/out/best.keras
-152/152 - 30s - loss: 0.0311 - accuracy: 0.9906 - val_loss: 0.0347 - val_accuracy: 0.9917 - lr: 1.2500e-04 - 30s/epoch - 195ms/step
+Epoch 41: val_accuracy did not improve from 0.99311
+152/152 - 29s - loss: 0.0364 - accuracy: 0.9888 - val_loss: 0.0343 - val_accuracy: 0.9928 - lr: 3.1250e-05 - 29s/epoch - 193ms/step
 Epoch 42/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 42: val_accuracy did not improve from 0.99173
-152/152 - 29s - loss: 0.0345 - accuracy: 0.9906 - val_loss: 0.0442 - val_accuracy: 0.9886 - lr: 1.2500e-04 - 29s/epoch - 191ms/step
+Epoch 42: val_accuracy did not improve from 0.99311
+
+Epoch 42: ReduceLROnPlateau reducing learning rate to 1.5625000742147677e-05.
+152/152 - 30s - loss: 0.0367 - accuracy: 0.9886 - val_loss: 0.0362 - val_accuracy: 0.9928 - lr: 3.1250e-05 - 30s/epoch - 195ms/step
 Epoch 43/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 43: val_accuracy did not improve from 0.99173
-152/152 - 29s - loss: 0.0333 - accuracy: 0.9890 - val_loss: 0.0455 - val_accuracy: 0.9883 - lr: 1.2500e-04 - 29s/epoch - 192ms/step
+Epoch 43: val_accuracy did not improve from 0.99311
+152/152 - 30s - loss: 0.0330 - accuracy: 0.9896 - val_loss: 0.0344 - val_accuracy: 0.9931 - lr: 1.5625e-05 - 30s/epoch - 195ms/step
 Epoch 44/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 44: val_accuracy improved from 0.99173 to 0.99242, saving model to train/out/best.keras
-152/152 - 29s - loss: 0.0324 - accuracy: 0.9892 - val_loss: 0.0355 - val_accuracy: 0.9924 - lr: 1.2500e-04 - 29s/epoch - 193ms/step
+Epoch 44: val_accuracy did not improve from 0.99311
+152/152 - 29s - loss: 0.0362 - accuracy: 0.9890 - val_loss: 0.0347 - val_accuracy: 0.9928 - lr: 1.5625e-05 - 29s/epoch - 194ms/step
 Epoch 45/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 45: val_accuracy did not improve from 0.99242
-
-Epoch 45: ReduceLROnPlateau reducing learning rate to 6.25000029685907e-05.
-152/152 - 29s - loss: 0.0295 - accuracy: 0.9907 - val_loss: 0.0369 - val_accuracy: 0.9900 - lr: 1.2500e-04 - 29s/epoch - 189ms/step
+Epoch 45: val_accuracy did not improve from 0.99311
+152/152 - 29s - loss: 0.0343 - accuracy: 0.9905 - val_loss: 0.0346 - val_accuracy: 0.9931 - lr: 1.5625e-05 - 29s/epoch - 193ms/step
 Epoch 46/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 46: val_accuracy did not improve from 0.99242
-152/152 - 29s - loss: 0.0267 - accuracy: 0.9923 - val_loss: 0.0328 - val_accuracy: 0.9924 - lr: 6.2500e-05 - 29s/epoch - 191ms/step
+Epoch 46: val_accuracy did not improve from 0.99311
+
+Epoch 46: ReduceLROnPlateau reducing learning rate to 1e-05.
+152/152 - 30s - loss: 0.0336 - accuracy: 0.9900 - val_loss: 0.0347 - val_accuracy: 0.9924 - lr: 1.5625e-05 - 30s/epoch - 195ms/step
 Epoch 47/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 47: val_accuracy did not improve from 0.99242
-152/152 - 29s - loss: 0.0315 - accuracy: 0.9908 - val_loss: 0.0373 - val_accuracy: 0.9910 - lr: 6.2500e-05 - 29s/epoch - 189ms/step
+Epoch 47: val_accuracy did not improve from 0.99311
+152/152 - 30s - loss: 0.0373 - accuracy: 0.9902 - val_loss: 0.0354 - val_accuracy: 0.9924 - lr: 1.0000e-05 - 30s/epoch - 195ms/step
 Epoch 48/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 48: val_accuracy improved from 0.99242 to 0.99345, saving model to train/out/best.keras
-152/152 - 29s - loss: 0.0247 - accuracy: 0.9927 - val_loss: 0.0315 - val_accuracy: 0.9935 - lr: 6.2500e-05 - 29s/epoch - 193ms/step
+Epoch 48: val_accuracy did not improve from 0.99311
+152/152 - 30s - loss: 0.0332 - accuracy: 0.9897 - val_loss: 0.0347 - val_accuracy: 0.9928 - lr: 1.0000e-05 - 30s/epoch - 197ms/step
 Epoch 49/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 49: val_accuracy did not improve from 0.99345
-152/152 - 29s - loss: 0.0260 - accuracy: 0.9922 - val_loss: 0.0353 - val_accuracy: 0.9931 - lr: 6.2500e-05 - 29s/epoch - 193ms/step
+Epoch 49: val_accuracy did not improve from 0.99311
+152/152 - 30s - loss: 0.0344 - accuracy: 0.9893 - val_loss: 0.0351 - val_accuracy: 0.9921 - lr: 1.0000e-05 - 30s/epoch - 200ms/step
 Epoch 50/60
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 50: val_accuracy did not improve from 0.99345
-152/152 - 29s - loss: 0.0254 - accuracy: 0.9926 - val_loss: 0.0325 - val_accuracy: 0.9921 - lr: 6.2500e-05 - 29s/epoch - 192ms/step
-Epoch 51/60
+Epoch 50: val_accuracy did not improve from 0.99311
+Restoring model weights from the end of the best epoch: 38.
+152/152 - 30s - loss: 0.0357 - accuracy: 0.9894 - val_loss: 0.0348 - val_accuracy: 0.9924 - lr: 1.0000e-05 - 30s/epoch - 198ms/step
+Epoch 50: early stopping
 WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
 
-Epoch 51: val_accuracy did not improve from 0.99345
-152/152 - 29s - loss: 0.0281 - accuracy: 0.9920 - val_loss: 0.0331 - val_accuracy: 0.9921 - lr: 6.2500e-05 - 29s/epoch - 192ms/step
-Epoch 52/60
-WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
-
-Epoch 52: val_accuracy did not improve from 0.99345
-
-Epoch 52: ReduceLROnPlateau reducing learning rate to 3.125000148429535e-05.
-152/152 - 29s - loss: 0.0270 - accuracy: 0.9918 - val_loss: 0.0325 - val_accuracy: 0.9928 - lr: 6.2500e-05 - 29s/epoch - 191ms/step
-Epoch 53/60
-WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
-
-Epoch 53: val_accuracy did not improve from 0.99345
-152/152 - 29s - loss: 0.0273 - accuracy: 0.9924 - val_loss: 0.0358 - val_accuracy: 0.9921 - lr: 3.1250e-05 - 29s/epoch - 190ms/step
-Epoch 54/60
-WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
-
-Epoch 54: val_accuracy did not improve from 0.99345
-152/152 - 29s - loss: 0.0254 - accuracy: 0.9922 - val_loss: 0.0341 - val_accuracy: 0.9924 - lr: 3.1250e-05 - 29s/epoch - 190ms/step
-Epoch 55/60
-WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
-
-Epoch 55: val_accuracy improved from 0.99345 to 0.99380, saving model to train/out/best.keras
-152/152 - 29s - loss: 0.0246 - accuracy: 0.9927 - val_loss: 0.0325 - val_accuracy: 0.9938 - lr: 3.1250e-05 - 29s/epoch - 192ms/step
-Epoch 56/60
-WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
-
-Epoch 56: val_accuracy did not improve from 0.99380
-
-Epoch 56: ReduceLROnPlateau reducing learning rate to 1.5625000742147677e-05.
-152/152 - 29s - loss: 0.0238 - accuracy: 0.9931 - val_loss: 0.0325 - val_accuracy: 0.9928 - lr: 3.1250e-05 - 29s/epoch - 191ms/step
-Epoch 57/60
-WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
-
-Epoch 57: val_accuracy did not improve from 0.99380
-152/152 - 29s - loss: 0.0241 - accuracy: 0.9931 - val_loss: 0.0335 - val_accuracy: 0.9938 - lr: 1.5625e-05 - 29s/epoch - 193ms/step
-Epoch 58/60
-WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
-
-Epoch 58: val_accuracy did not improve from 0.99380
-152/152 - 29s - loss: 0.0288 - accuracy: 0.9915 - val_loss: 0.0346 - val_accuracy: 0.9924 - lr: 1.5625e-05 - 29s/epoch - 189ms/step
-Epoch 59/60
-WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
-
-Epoch 59: val_accuracy did not improve from 0.99380
-152/152 - 29s - loss: 0.0245 - accuracy: 0.9927 - val_loss: 0.0339 - val_accuracy: 0.9928 - lr: 1.5625e-05 - 29s/epoch - 191ms/step
-Epoch 60/60
-WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
-
-Epoch 60: val_accuracy did not improve from 0.99380
-
-Epoch 60: ReduceLROnPlateau reducing learning rate to 1e-05.
-152/152 - 29s - loss: 0.0251 - accuracy: 0.9921 - val_loss: 0.0338 - val_accuracy: 0.9931 - lr: 1.5625e-05 - 29s/epoch - 191ms/step
-WARNING:tensorflow:`evaluate()` received a value for `sample_weight`, but `weighted_metrics` were not provided.  Did you mean to pass metrics to `weighted_metrics` in `compile()`?  If this is intentional you can pass `weighted_metrics=[]` to `compile()` in order to silence this warning.
-
-Тест: точность 99.07 %, ошибка 0.051
-Время обучения: 31.3 мин
+Тест: точность 98.76 %, ошибка 0.058
+Время обучения: 26.9 мин
 Summary on the non-converted ops:
 ---------------------------------
  * Accepted dialects: tfl, builtin, func
@@ -395,9 +366,9 @@ Summary on the non-converted ops:
 Символов всего: 24170 → обучение 19336, проверка 2901, тест 1933
 Классов: 23, без примеров: 0
 Вход: 32x32, параметров: 173807
-Эпох пройдено: 60 (терпение 12)
-Время обучения: 31.3 мин
-Точность на тесте: 99.07 %
+Эпох пройдено: 50 (терпение 12)
+Время обучения: 26.9 мин
+Точность на тесте: 98.76 %
 
 Примеров по классам:
   0: 1200
@@ -426,11 +397,11 @@ Summary on the non-converted ops:
 
 Точность по классам:
   0: 99.0 % (примеров 96)
-  1: 93.8 % (примеров 96)
+  1: 92.7 % (примеров 96)
   2: 100.0 % (примеров 96)
-  3: 97.9 % (примеров 96)
-  4: 99.0 % (примеров 96)
-  5: 99.0 % (примеров 96)
+  3: 96.9 % (примеров 96)
+  4: 97.9 % (примеров 96)
+  5: 96.9 % (примеров 96)
   6: 97.9 % (примеров 96)
   7: 100.0 % (примеров 96)
   8: 99.0 % (примеров 96)
@@ -440,7 +411,7 @@ Summary on the non-converted ops:
   =: 100.0 % (примеров 96)
   (: 100.0 % (примеров 96)
   ): 100.0 % (примеров 96)
-  икс / знак умножения: 97.9 % (примеров 96)
+  икс / знак умножения: 96.9 % (примеров 96)
   игрек: 100.0 % (примеров 5)
   десятичная точка: 100.0 % (примеров 96)
   дробная черта: 100.0 % (примеров 96)
@@ -451,17 +422,17 @@ Summary on the non-converted ops:
 
 Частые ошибки (что приняли за что):
   1 → буква l (для log): 4 раз
+  5 → 3: 2 раз
+  4 → 7: 2 раз
+  1 → 7: 2 раз
   икс / знак умножения → -: 2 раз
   3 → 9: 1 раз
-  6 → 0: 1 раз
-  4 → 7: 1 раз
-  6 → 8: 1 раз
+  икс / знак умножения → 4: 1 раз
+  6 → 2: 1 раз
+  6 → 5: 1 раз
   5 → 9: 1 раз
   1 → икс / знак умножения: 1 раз
   буква g (для log) → 9: 1 раз
-  0 → 6: 1 раз
-  буква l (для log) → 1: 1 раз
-  3 → 8: 1 раз
 
 Веса: 180.1 КБ → assets/model.tflite
 Отчёт: train/out/report.txt
