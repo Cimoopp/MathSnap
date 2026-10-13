@@ -1,0 +1,100 @@
+name: Build APK
+
+on:
+  push:
+    paths:
+      - "main.py"
+      - "buildozer.spec"
+      - "ocr/**"
+      - "solver/**"
+      - "history/**"
+      - "assets/**"
+      - ".github/workflows/apk.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Python 3.11: buildozer и python-for-android на 3.12 спотыкаются
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Системные пакеты для p4a
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            git zip unzip openjdk-17-jdk autoconf libtool \
+            pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev \
+            cmake libffi-dev libssl-dev automake
+
+      - name: Кэш buildozer и gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.buildozer
+            ~/.gradle
+          key: buildozer-${{ hashFiles('buildozer.spec') }}
+
+      # Cython 3 ломает рецепты p4a — только ветка 0.29/3.0 ниже 3
+      - name: Установка buildozer
+        run: |
+          pip install --upgrade pip
+          pip install "buildozer==1.5.0" "cython<3"
+
+      - name: Версии инструментов
+        run: |
+          python -V
+          cython --version
+          buildozer --version
+
+      - name: Сборка APK
+        run: |
+          set -o pipefail
+          yes | buildozer android debug 2>&1 | tee build.log
+
+      - name: Проверка, что APK появился
+        run: |
+          ls -la bin/ || true
+          if ! ls bin/*.apk >/dev/null 2>&1; then
+            echo "APK не собрался — смотри лог выше и артефакт build-log."
+            exit 1
+          fi
+
+      - name: Хвост лога при ошибке
+        if: failure()
+        run: tail -n 300 build.log || true
+
+      - name: Лог сборки в артефакт
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+          if-no-files-found: warn
+
+      - name: APK в артефакт
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mathsnap-apk
+          path: bin/*.apk
+          if-no-files-found: warn
+
+      - name: Публикация релиза apk-latest
+        if: success()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-latest
+          name: MathSnap APK (latest build)
+          body: "Сборка APK из main. Инференс tflite-runtime, решение на SymPy, офлайн."
+          files: bin/*.apk
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
