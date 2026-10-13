@@ -42,34 +42,56 @@ jobs:
             ~/.gradle
           key: buildozer-${{ hashFiles('buildozer.spec') }}
 
-      # Cython 3 ломает рецепты p4a — только ветка 0.29/3.0 ниже 3
+      # Cython 3 ломает рецепты p4a — только ветка ниже 3
       - name: Установка buildozer
         run: |
           pip install --upgrade pip
           pip install "buildozer==1.5.0" "cython<3"
 
-      - name: Версии инструментов
+      - name: Версии инструментов и требования приложения
         run: |
           python -V
           cython --version
           buildozer --version
+          echo "--- requirements из buildozer.spec ---"
+          grep -n "requirements" buildozer.spec || true
+          echo "--- файлы приложения ---"
+          ls -la
+          echo "--- assets ---"
+          ls -la assets/ || true
 
+      # ВАЖНО: без pipefail. Раньше `set -o pipefail` вместе с `yes |`
+      # давал "yes: Broken pipe" и прятал настоящую ошибку сборки.
       - name: Сборка APK
         run: |
-          set -o pipefail
-          yes | buildozer android debug 2>&1 | tee build.log
+          printf 'y\ny\ny\ny\ny\n' | buildozer android debug 2>&1 | tee build.log
+          echo "код выхода buildozer: ${PIPESTATUS[1]}"
 
       - name: Проверка, что APK появился
         run: |
           ls -la bin/ || true
           if ! ls bin/*.apk >/dev/null 2>&1; then
-            echo "APK не собрался — смотри лог выше и артефакт build-log."
+            echo "APK не собрался — смотри артефакт build-log и хвост лога ниже."
             exit 1
           fi
+          ls -la bin/*.apk
 
-      - name: Хвост лога при ошибке
-        if: failure()
-        run: tail -n 300 build.log || true
+      # Хвост печатается ВСЕГДА, а не только при failure(): если падает
+      # предыдущий шаг проверки, сам лог уже успеть напечатать не может.
+      - name: Хвост лога сборки
+        if: always()
+        run: |
+          echo "=== последние 250 строк build.log ==="
+          tail -n 250 build.log || echo "build.log не найден"
+
+      # Отдельно вытаскиваем строки с настоящими ошибками — так причина
+      # видна сразу, без чтения всего лога.
+      - name: Поиск ошибок в логе
+        if: always()
+        run: |
+          echo "=== строки с ошибками ==="
+          grep -n -i -E "error|traceback|no valid recipe|command failed|not found" build.log \
+            | grep -v -i "error_|no errors" | head -n 80 || true
 
       - name: Лог сборки в артефакт
         if: always()
@@ -93,7 +115,7 @@ jobs:
         with:
           tag_name: apk-latest
           name: MathSnap APK (latest build)
-          body: "Сборка APK из main. Инференс tflite-runtime, решение на SymPy, офлайн."
+          body: "Сборка APK из main. Офлайн-распознавание, решение на SymPy."
           files: bin/*.apk
           make_latest: true
         env:
