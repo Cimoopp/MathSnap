@@ -7,7 +7,6 @@ on:
       - "buildozer.spec"
       - "ocr/**"
       - "solver/**"
-      - "history/**"
       - "assets/**"
       - ".github/workflows/apk.yml"
   workflow_dispatch:
@@ -26,23 +25,40 @@ jobs:
         with:
           python-version: "3.11"
 
+      # ВАЖНО про gettext и autopoint.
+      # Рецепты p4a (liblzma и другие) прогоняют autoreconf, а тот зовёт
+      # autopoint. Без пакетов gettext и autopoint сборка падает примерно
+      # на шестой минуте с "autoreconf: error: autopoint failed with exit
+      # status: 2" — при этом сам buildozer печатает только общее
+      # "failed to execute the last command", и причина не видна.
+      # libtool-bin тоже нужен: libtool без него не находит часть макросов.
       - name: Системные пакеты для p4a
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            git zip unzip openjdk-17-jdk autoconf libtool \
-            pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev \
-            cmake libffi-dev libssl-dev automake
+            git zip unzip openjdk-17-jdk \
+            autoconf automake libtool libtool-bin pkg-config \
+            gettext autopoint liblzma-dev libbz2-dev patch ccache \
+            zlib1g-dev libncurses5-dev libncursesw5-dev \
+            cmake libffi-dev libssl-dev
+          echo "--- инструменты автосборки ---"
+          autoconf --version | head -n 1
+          automake --version | head -n 1
+          autopoint --version | head -n 1
+          libtool --version | head -n 1
 
-      - name: Кэш buildozer и gradle
+      - name: Кэш buildozer, gradle и NDK
         uses: actions/cache@v4
         with:
           path: |
             ~/.buildozer
             ~/.gradle
+            ~/.cache/pip
           key: buildozer-${{ hashFiles('buildozer.spec') }}
 
-      # Cython 3 ломает рецепты p4a — только ветка ниже 3
+      # Cython 3 ломает рецепты p4a — только ветка ниже 3.
+      # buildozer 1.5.0 последний стабильный и совместим с p4a, который
+      # он подтягивает сам.
       - name: Установка buildozer
         run: |
           pip install --upgrade pip
@@ -60,8 +76,8 @@ jobs:
           echo "--- assets ---"
           ls -la assets/ || true
 
-      # ВАЖНО: без pipefail. Раньше `set -o pipefail` вместе с `yes |`
-      # давал "yes: Broken pipe" и прятал настоящую ошибку сборки.
+      # Без pipefail: раньше `set -o pipefail` вместе с `yes |` давал
+      # "yes: Broken pipe" и перекрывал настоящую ошибку сборки.
       - name: Сборка APK
         run: |
           printf 'y\ny\ny\ny\ny\n' | buildozer android debug 2>&1 | tee build.log
@@ -71,27 +87,28 @@ jobs:
         run: |
           ls -la bin/ || true
           if ! ls bin/*.apk >/dev/null 2>&1; then
-            echo "APK не собрался — смотри артефакт build-log и хвост лога ниже."
+            echo "APK не собрался — причина ниже, в хвосте лога."
             exit 1
           fi
           ls -la bin/*.apk
 
-      # Хвост печатается ВСЕГДА, а не только при failure(): если падает
-      # предыдущий шаг проверки, сам лог уже успеть напечатать не может.
+      # Хвост печатается ВСЕГДА: если падает предыдущий шаг проверки,
+      # сам лог к этому моменту уже не напечататься не успеет.
       - name: Хвост лога сборки
         if: always()
         run: |
-          echo "=== последние 250 строк build.log ==="
-          tail -n 250 build.log || echo "build.log не найден"
+          echo "=== последние 300 строк build.log ==="
+          tail -n 300 build.log || echo "build.log не найден"
 
       # Отдельно вытаскиваем строки с настоящими ошибками — так причина
-      # видна сразу, без чтения всего лога.
+      # видна сразу, без чтения всего лога. autoreconf и autopoint здесь
+      # на первом месте не случайно: это самая частая причина падений p4a.
       - name: Поиск ошибок в логе
         if: always()
         run: |
           echo "=== строки с ошибками ==="
-          grep -n -i -E "error|traceback|no valid recipe|command failed|not found" build.log \
-            | grep -v -i "error_|no errors" | head -n 80 || true
+          grep -n -i -E "autoreconf|autopoint|error|traceback|no valid recipe|command failed|not found|unsupported" build.log \
+            | grep -v -i "error_|no errors|errorhandler" | head -n 100 || true
 
       - name: Лог сборки в артефакт
         if: always()
@@ -115,7 +132,7 @@ jobs:
         with:
           tag_name: apk-latest
           name: MathSnap APK (latest build)
-          body: "Сборка APK из main. Офлайн-распознавание, решение на SymPy."
+          body: "Сборка APK из main. Офлайн-распознавание на своей CNN, решение на SymPy."
           files: bin/*.apk
           make_latest: true
         env:
