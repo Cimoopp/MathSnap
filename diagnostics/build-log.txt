@@ -1,9 +1,209 @@
-[1m[90m[DEBUG][39m[0m:   	configure.ac:418: the top level
-[1m[90m[DEBUG][39m[0m:   	configure.ac:215: error: possibly undefined macro: LT_SYS_SYMBOL_USCORE
-[1m[90m[DEBUG][39m[0m:   	      If this token and others are legitimate, please use m4_pattern_allow.
-[1m[90m[DEBUG][39m[0m:   	      See the Autoconf documentation.
-[1m[90m[DEBUG][39m[0m:   	autoreconf: error: /usr/bin/autoconf failed with exit status: 1
-Exception in thread background thread for pid 23450:
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/modalview-background.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/overflow.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/player-background.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/player-play-overlay.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/previous_normal.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/progressbar.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/progressbar_background.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/ring.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/selector_left.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/selector_middle.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/selector_right.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/separator.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/slider_cursor.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/slider_cursor_disabled.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/sliderh_background.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/sliderh_background_disabled.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/sliderv_background.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/sliderv_background_disabled.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/spinner.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/spinner_disabled.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/spinner_pressed.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/splitter.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/splitter_disabled.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/splitter_disabled_down.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/splitter_disabled_down_h.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/splitter_disabled_h.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/splitter_down.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/splitter_down_h.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/splitter_grip.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/splitter_grip_h.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/splitter_h.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/switch-background.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/switch-background_disabled.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/switch-button.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/switch-button_disabled.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/tab.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/tab_btn.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/tab_btn_disabled.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/tab_btn_disabled_pressed.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/tab_btn_pressed.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/tab_disabled.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/textinput.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/textinput_active.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/textinput_disabled.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/textinput_disabled_active.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/tree_closed.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/tree_opened.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/vkeyboard_background.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/vkeyboard_disabled_background.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/vkeyboard_disabled_key_down.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/vkeyboard_disabled_key_normal.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/vkeyboard_key_down.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/tools/theming/defaulttheme/vkeyboard_key_normal.png'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/__init__.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/accordion.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/actionbar.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/anchorlayout.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/boxlayout.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/bubble.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/button.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/camera.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/carousel.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/checkbox.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/codeinput.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/colorpicker.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/dropdown.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/effectwidget.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/filechooser.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/floatlayout.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/gesturesurface.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/gridlayout.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/image.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/label.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/layout.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/modalview.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/pagelayout.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/popup.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/progressbar.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/recycleboxlayout.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/recyclegridlayout.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/recyclelayout.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/relativelayout.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/rst.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/sandbox.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/scatter.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/scatterlayout.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/screenmanager.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/scrollview.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/settings.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/slider.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/spinner.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/splitter.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/stacklayout.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/stencilview.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/switch.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/tabbedpanel.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/textinput.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/togglebutton.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/treeview.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/video.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/videoplayer.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/vkeyboard.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/widget.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/behaviors/__init__.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/behaviors/button.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/behaviors/codenavigation.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/behaviors/compoundselection.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/behaviors/cover.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/behaviors/drag.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/behaviors/emacs.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/behaviors/focus.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/behaviors/knspace.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/behaviors/togglebutton.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/behaviors/touchripple.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/recycleview/__init__.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/recycleview/datamodel.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/recycleview/layout.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'kivy/uix/recycleview/views.py'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'Kivy-2.3.1.dist-info/AUTHORS'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'Kivy-2.3.1.dist-info/LICENSE'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'Kivy-2.3.1.dist-info/METADATA'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'Kivy-2.3.1.dist-info/WHEEL'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'Kivy-2.3.1.dist-info/dependency_links.txt'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'Kivy-2.3.1.dist-info/top_level.txt'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] adding 'Kivy-2.3.1.dist-info/RECORD'
+[1m[90m[DEBUG][39m[0m:   	[INFO   ] removing build/bdist.linux-x86_64/wheel
+[1m[90m[DEBUG][39m[0m:   	[1m[92mSuccessfully built [4mKivy-2.3.1-cp314-cp314-android_24_arm64_v8a.whl[0m[1m[92m[0m
+[1m[INFO][0m:    [36m<- directory context /home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/python-for-android[39m
+[1m[INFO][0m:    Installing built wheel: Kivy-2.3.1-cp314-cp314-android_24_arm64_v8a.whl
+[1m[INFO][0m:    [1m[32m# Biglinking object files[0m[39m
+[1m[31m[WARNING][39m[0m: Context's python recipe found, skipping biglink (will this work?)
+[1m[INFO][0m:    [1m[32m# Postbuilding recipes[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding freetype for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding hostpython3 for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding jpeg for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding libffi for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding openssl for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding png for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding sdl2_image for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding sdl2_mixer for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding sdl2_ttf for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding sqlite3 for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding python3 for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding sdl2 for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding numpy for arm64-v8a[0m[39m
+stty: 'standard input': Inappropriate ioctl for device
+[1m[90m[DEBUG][39m[0m:   [90m->[0m running cp /home/runner/.buildozer/android/platform/android-ndk-r28c/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so /home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/build-arm64-v8a/build/libs_collections/mathsnap/arm64-v8a[0m
+[1m[INFO][0m:    [1m[32mPostbuilding Pillow for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding pyjnius for arm64-v8a[0m[39m
+[1m[INFO][0m:    Copying pyjnius java class to classes build dir
+[1m[INFO][0m:    [36m-> directory context /home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/build-arm64-v8a/build/other_builds/pyjnius-sdl2/arm64-v8a__ndk_target_24/pyjnius[39m
+[1m[90m[DEBUG][39m[0m:   Create directory /home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/build-arm64-v8a/build/javaclasses/mathsnap
+stty: 'standard input': Inappropriate ioctl for device
+[1m[90m[DEBUG][39m[0m:   [90m->[0m running cp -a jnius/src/org /home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/build-arm64-v8a/build/javaclasses/mathsnap[0m
+[1m[INFO][0m:    [36m<- directory context /home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/python-for-android[39m
+[1m[INFO][0m:    [1m[32mPostbuilding setuptools for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding android for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding tflite-runtime for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32mPostbuilding kivy for arm64-v8a[0m[39m
+[1m[INFO][0m:    [1m[32m# Installing pure Python modules[0m[39m
+[1m[INFO][0m:    *** PYTHON PACKAGE / PROJECT INSTALL STAGE FOR ARCH: arm64-v8a ***
+stty: 'standard input': Inappropriate ioctl for device
+[1m[90m[DEBUG][39m[0m:   [90m->[0m running pip3 install certifi chardet filetype idna requests six sympy urllib3 --dry-run --break-system-packages --ignore-installed --disable-pip-version-check --only-binary=:all: --report /tmp/tmpgn3jglq6 -q --platform=android_24_arm64_v8a --platform=android_24_aarch64 --python-version 3.14.2[0m
+[1m[INFO][0m:    Extra resolved pure python dependencies :
+[1m[INFO][0m:     
+[1m[INFO][0m:      [32mcharset-normalizer[37m : [1m3.5.2[0m
+[1m[INFO][0m:      [32mmpmath[37m : [1m1.3.0[0m
+[1m[INFO][0m:     
+[1m[INFO][0m:    The requirements (certifi, chardet, filetype, idna, requests, six, sympy, urllib3, https://files.pythonhosted.org/packages/58/ca/7aa91362a2f77ac8e9e28a9b902a74f7d0e11a851ef0d27a74308da8cd90/charset_normalizer-3.5.2-cp314-cp314-android_24_arm64_v8a.whl, https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl) don't have recipes, attempting to install them with pip
+[1m[INFO][0m:    If this fails, it may mean that the module has compiled components and needs a recipe.
+[1m[INFO][0m:    [36m-> directory context /home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/build-arm64-v8a/build[39m
+stty: 'standard input': Inappropriate ioctl for device
+[1m[90m[DEBUG][39m[0m:   [90m->[0m running python -m venv venv[0m
+[1m[INFO][0m:    Upgrade pip to latest version
+stty: 'standard input': Inappropriate ioctl for device
+[1m[90m[DEBUG][39m[0m:   [90m->[0m running bash -c source venv/bin/activate && pip install -U pip[0m
+[1m[90m[DEBUG][39m[0m:   	Requirement already satisfied: pip in ./venv/lib/python3.14/site-packages (25.3)
+[1m[90m[DEBUG][39m[0m:   	Collecting pip
+[1m[90m[DEBUG][39m[0m:   	  Downloading pip-26.2.1-py3-none-any.whl.metadata (4.6 kB)
+[1m[90m[DEBUG][39m[0m:   	Downloading pip-26.2.1-py3-none-any.whl (1.8 MB)
+[1m[90m[DEBUG][39m[0m:   	[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/1.8 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m1.8/1.8 MB[0m [31m143.7 MB/s[0m  [33m0:00:00[0m
+[1m[90m[DEBUG][39m[0m:   	[?25hInstalling collected packages: pip
+[1m[90m[DEBUG][39m[0m:   	  Attempting uninstall: pip
+[1m[90m[DEBUG][39m[0m:   	    Found existing installation: pip 25.3
+[1m[90m[DEBUG][39m[0m:   	    Uninstalling pip-25.3:
+[1m[90m[DEBUG][39m[0m:   	      Successfully uninstalled pip-25.3
+[1m[90m[DEBUG][39m[0m:   	Successfully installed pip-26.2.1
+[1m[INFO][0m:    Install Cython in case one of the modules needs it to build
+stty: 'standard input': Inappropriate ioctl for device
+[1m[90m[DEBUG][39m[0m:   [90m->[0m running bash -c venv/bin/pip install Cython[0m
+[1m[90m[DEBUG][39m[0m:   	Collecting Cython
+[1m[90m[DEBUG][39m[0m:   	  Downloading cython-3.3.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (28 kB)
+[1m[90m[DEBUG][39m[0m:   	Downloading cython-3.3.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (3.5 MB)
+[1m[90m[DEBUG][39m[0m:   	[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/3.5 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m3.5/3.5 MB[0m [31m175.9 MB/s[0m  [33m0:00:00[0m
+[1m[90m[DEBUG][39m[0m:   	[?25hInstalling collected packages: Cython
+[1m[90m[DEBUG][39m[0m:   	Successfully installed Cython-3.3.0
+[1m[90m[DEBUG][39m[0m:   Create directory /home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/build-arm64-v8a/build/other_builds/recipe/arm64-v8a__ndk_target_24/objects_recipe
+[1m[INFO][0m:    Creating a requirements.txt file for the Python modules
+[1m[INFO][0m:    Installing Python modules with pip
+[1m[INFO][0m:    IF THIS FAILS, THE MODULES MAY NEED A RECIPE. A reason for this is often modules compiling native code that is unaware of Android cross-compilation and does not work without additional changes / workarounds.
+stty: 'standard input': Inappropriate ioctl for device
+[1m[90m[DEBUG][39m[0m:   [90m->[0m running bash -c venv/bin/pip install -v --target '/home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/build-arm64-v8a/build/python-installs/mathsnap/arm64-v8a' --no-deps -r requirements.txt[0m
+[1m[90m[DEBUG][39m[0m:   	Using pip 26.2.1 from /home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/build-arm64-v8a/build/venv/lib/python3.14/site-packages/pip (python 3.14)
+[1m[90m[DEBUG][39m[0m:   	[31mERROR: charset_normalizer-3.5.2-cp314-cp314-android_24_arm64_v8a.whl is not a supported wheel on this platform.[0m[31m
+[1m[90m[DEBUG][39m[0m:   	[0m
+Exception in thread background thread for pid 78747:
 Traceback (most recent call last):
   File "/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
     self.run()
@@ -20,112 +220,12 @@ Traceback (most recent call last):
     raise exc
 sh.ErrorReturnCode_1: 
 
-  RAN: /home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/build-arm64-v8a/build/other_builds/libffi/arm64-v8a__ndk_target_24/libffi/autogen.sh
+  RAN: /usr/bin/bash -c 'venv/bin/pip install -v --target '"'"'/home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/build-arm64-v8a/build/python-installs/mathsnap/arm64-v8a'"'"' --no-deps -r requirements.txt'
 
   STDOUT:
-autoreconf: export WARNINGS=
-autoreconf: Entering directory '.'
-autoreconf: configure.ac: not using Gettext
-autoreconf: running: aclocal -I m4
-autoreconf: configure.ac: tracing
-autoreconf: running: libtoolize --copy
-libtoolize: putting auxiliary files in '.'.
-libtoolize: copying file './ltmain.sh'
-libtoolize: putting macros in AC_CONFIG_MACRO_DIRS, 'm4'.
-libtoolize: copying file 'm4/libtool.m4'
-libtoolize: copying file 'm4/ltoptions.m4'
-libtoolize: copying file 'm4/ltsugar.m4'
-libtoolize: copying file 'm4/ltversion.m4'
-libtoolize: copying file 'm4/lt~obsolete.m4'
-autoreconf: configure.ac: not using Intltool
-autoreconf: configure.ac: not using Gtkdoc
-autoreconf: running: aclocal -I m4
-autoreconf: running: /usr/bin/autoconf
-configure.ac:8: warning: The macro `AC_CANONICAL_SYSTEM' is obsolete.
-configure.ac:8: You should run autoupdate.
-./lib/autoconf/general.m4:2081: AC_CANONICAL_SYSTEM is expanded from...
-configure.ac:8: the top level
-configure.ac:41: warning: The macro `AC_PROG_LIBTOOL' is obsolete.
-configure.ac:41: You should run autoupdate.
-m4/libtool.m4:100: AC_PROG_LIBTOOL is expanded from...
-configure.ac:41: the top level
-configure.ac:74: warning: The macro `AC_TRY_COMPILE' is obsolete.
-configure.ac:74: You should run autoupdate.
-./lib/autoconf/general.m4:2847: AC_TRY_COMPILE is expanded from...
-lib/m4sugar/m4sh.m4:692: _AS_IF_ELSE is expanded from...
-lib/m4sugar/m4sh.m4:699: AS_IF is expanded from...
-./lib/autoconf/general.m4:2249: AC_CACHE_VAL is expanded from...
-./lib/autoconf/general.m4:2270: AC_CACHE_CHECK is expanded from...
-acinclude.m4:3: AC_FUNC_MMAP_BLACKLIST is expanded from...
-configure.ac:74: the top level
-configure.ac:91: warning: The macro `AC_HEADER_STDC' is obsolete.
-configure.ac:91: You should run autoupdate.
-./lib/autoconf/headers.m4:704: AC_HEADER_STDC is expanded from...
-configure.ac:91: the top level
-configure.ac:118: warning: The macro `AC_TRY_COMPILE' is obsolete.
-configure.ac:118: You should run autoupdate.
-./lib/autoconf/general.m4:2847: AC_TRY_COMPILE is expanded from...
-lib/m4sugar/m4sh.m4:692: _AS_IF_ELSE is expanded from...
-lib/m4sugar/m4sh.m4:699: AS_IF is expanded from...
-./lib/autoconf/general.m4:2249: AC_CACHE_VAL is expanded from...
-./lib/autoconf/general.m4:2270: AC_CACHE_CHECK is expanded from...
-m4/asmcfi.m4:1: GCC_AS_CFI_PSEUDO_OP is expanded from...
-configure.ac:118: the top level
-configure.ac:122: warning: The macro `AC_TRY_LINK' is obsolete.
-configure.ac:122: You should run autoupdate.
-./lib/autoconf/general.m4:2920: AC_TRY_LINK is expanded from...
-lib/m4sugar/m4sh.m4:692: _AS_IF_ELSE is expanded from...
-lib/m4sugar/m4sh.m4:699: AS_IF is expanded from...
-./lib/autoconf/general.m4:2249: AC_CACHE_VAL is expanded from...
-./lib/autoconf/general.m4:2270: AC_CACHE_CHECK is expanded from...
-configure.ac:122: the top level
-configure.ac:138: warning: The macro `AC_TRY_COMPILE' is obsolete.
-configure.ac:138: You should run autoupdate.
-./lib/autoconf/general.m4:2847: AC_TRY_COMPILE is expanded from...
-lib/m4sugar/m4sh.m4:692: _AS_IF_ELSE is expanded from...
-lib/m4sugar/m4sh.m4:699: AS_IF is expanded from...
-./lib/autoconf/general.m4:2249: AC_CACHE_VAL is expanded from...
-./lib/autoconf/general.m4:2270: AC_CACHE_CHECK is expanded from...
-configure.ac:138: the top level
-configure.ac:185: warning: The macro `AC_TRY_COMPILE' is obsolete.
-configure.ac:185: You should run autoupdate.
-./lib/autoconf/general.m4:2847: AC_TRY_COMPILE is expanded from...
-lib/m4sugar/m4sh.m4:692: _AS_IF_ELSE is expanded from...
-lib/m4sugar/m4sh.m4:699: AS_IF is expanded from...
-./lib/autoconf/general.m4:2249: AC_CACHE_VAL is expanded from...
-./lib/autoconf/general.m4:2270: AC_CACHE_CHECK is expanded from...
-configure.ac:185: the top level
-configure.ac:310: warning: The macro `AC_HELP_STRING' is obsolete.
-configure.ac:310: You should run autoupdate.
-./lib/autoconf/general.m4:204: AC_HELP_STRING is expanded from...
-configure.ac:310: the top level
-configure.ac:418: warning: The macro `AC_HELP_STRING' is obsolete.
-configure.ac:418: You should run autoupdate.
-./lib/autoconf/general.m4:204: AC_HELP_STRING is expanded from...
-acinclude.m4:353: LIBFFI_ENABLE_SYMVERS is expanded from...
-configure.ac:418: the top level
-configure.ac:418: warning: The macro `AC_PROG_LD' is obsolete.
-configure.ac:418: You should run autoupdate.
-m4/libtool.m4:3361: AC_PROG_LD is expanded from...
-acinclude.m4:251: LIBFFI_CHECK_LINKER_FEATURES is expanded from...
-acinclude.m4:353: LIBFFI_ENABLE_SYMVERS is expanded from...
-configure.ac:418: the top level
-configure.ac:418: warning: The macro `AC_TRY_RUN' is obsolete.
-configure.ac:418: You should run autoupdate.
-./lib/autoconf/general.m4:2997: AC_TRY_RUN is expanded from...
-acinclude.m4:251: LIBFFI_CHECK_LINKER_FEATURES is expanded from...
-acinclude.m4:353: LIBFFI_ENABLE_SYMVERS is expanded from...
-configure.ac:418: the top level
-configure.ac:418: warning: The macro `AC_TRY_LINK' is obsolete.
-configure.ac:418: You should run autoupdate.
-./lib/autoconf/general.m4:2920: AC_TRY_LINK is expanded from...
-acinclude.m4:353: LIBFFI_ENABLE_SYMVERS is expanded from...
-configure.ac:418: the top level
-configure.ac:215: error: possibly undefined macro: LT_SYS_SYMBOL_USCORE
-      If this token and others are legitimate, please use m4_pattern_allow.
-      See the Autoconf documentation.
-autoreconf: error: /usr/bin/autoconf failed with exit status: 1
-
+Using pip 26.2.1 from /home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/build-arm64-v8a/build/venv/lib/python3.14/site-packages/pip (python 3.14)
+[31mERROR: charset_normalizer-3.5.2-cp314-cp314-android_24_arm64_v8a.whl is not a supported wheel on this platform.[0m[31m
+[0m
 
   STDERR:
 
@@ -142,10 +242,10 @@ Traceback (most recent call last):
     build_dist_from_args(ctx, dist, args)
   File "/home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/python-for-android/pythonforandroid/toolchain.py", line 163, in build_dist_from_args
     build_recipes(build_order, python_modules, ctx,
-  File "/home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/python-for-android/pythonforandroid/build.py", line 530, in build_recipes
-    recipe.build_arch(arch)
-  File "/home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi/__init__.py", line 28, in build_arch
-    shprint(sh.Command('./autogen.sh'), _env=env)
+  File "/home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/python-for-android/pythonforandroid/build.py", line 554, in build_recipes
+    run_pymodules_install(
+  File "/home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/python-for-android/pythonforandroid/build.py", line 927, in run_pymodules_install
+    shprint(sh.bash, '-c', (
   File "/home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/python-for-android/pythonforandroid/logger.py", line 174, in shprint
     for line in output:
   File "/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/sh/__init__.py", line 876, in __next__
@@ -156,112 +256,12 @@ Traceback (most recent call last):
     raise exc
 sh.ErrorReturnCode_1: 
 
-  RAN: /home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/build-arm64-v8a/build/other_builds/libffi/arm64-v8a__ndk_target_24/libffi/autogen.sh
+  RAN: /usr/bin/bash -c 'venv/bin/pip install -v --target '"'"'/home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/build-arm64-v8a/build/python-installs/mathsnap/arm64-v8a'"'"' --no-deps -r requirements.txt'
 
   STDOUT:
-autoreconf: export WARNINGS=
-autoreconf: Entering directory '.'
-autoreconf: configure.ac: not using Gettext
-autoreconf: running: aclocal -I m4
-autoreconf: configure.ac: tracing
-autoreconf: running: libtoolize --copy
-libtoolize: putting auxiliary files in '.'.
-libtoolize: copying file './ltmain.sh'
-libtoolize: putting macros in AC_CONFIG_MACRO_DIRS, 'm4'.
-libtoolize: copying file 'm4/libtool.m4'
-libtoolize: copying file 'm4/ltoptions.m4'
-libtoolize: copying file 'm4/ltsugar.m4'
-libtoolize: copying file 'm4/ltversion.m4'
-libtoolize: copying file 'm4/lt~obsolete.m4'
-autoreconf: configure.ac: not using Intltool
-autoreconf: configure.ac: not using Gtkdoc
-autoreconf: running: aclocal -I m4
-autoreconf: running: /usr/bin/autoconf
-configure.ac:8: warning: The macro `AC_CANONICAL_SYSTEM' is obsolete.
-configure.ac:8: You should run autoupdate.
-./lib/autoconf/general.m4:2081: AC_CANONICAL_SYSTEM is expanded from...
-configure.ac:8: the top level
-configure.ac:41: warning: The macro `AC_PROG_LIBTOOL' is obsolete.
-configure.ac:41: You should run autoupdate.
-m4/libtool.m4:100: AC_PROG_LIBTOOL is expanded from...
-configure.ac:41: the top level
-configure.ac:74: warning: The macro `AC_TRY_COMPILE' is obsolete.
-configure.ac:74: You should run autoupdate.
-./lib/autoconf/general.m4:2847: AC_TRY_COMPILE is expanded from...
-lib/m4sugar/m4sh.m4:692: _AS_IF_ELSE is expanded from...
-lib/m4sugar/m4sh.m4:699: AS_IF is expanded from...
-./lib/autoconf/general.m4:2249: AC_CACHE_VAL is expanded from...
-./lib/autoconf/general.m4:2270: AC_CACHE_CHECK is expanded from...
-acinclude.m4:3: AC_FUNC_MMAP_BLACKLIST is expanded from...
-configure.ac:74: the top level
-configure.ac:91: warning: The macro `AC_HEADER_STDC' is obsolete.
-configure.ac:91: You should run autoupdate.
-./lib/autoconf/headers.m4:704: AC_HEADER_STDC is expanded from...
-configure.ac:91: the top level
-configure.ac:118: warning: The macro `AC_TRY_COMPILE' is obsolete.
-configure.ac:118: You should run autoupdate.
-./lib/autoconf/general.m4:2847: AC_TRY_COMPILE is expanded from...
-lib/m4sugar/m4sh.m4:692: _AS_IF_ELSE is expanded from...
-lib/m4sugar/m4sh.m4:699: AS_IF is expanded from...
-./lib/autoconf/general.m4:2249: AC_CACHE_VAL is expanded from...
-./lib/autoconf/general.m4:2270: AC_CACHE_CHECK is expanded from...
-m4/asmcfi.m4:1: GCC_AS_CFI_PSEUDO_OP is expanded from...
-configure.ac:118: the top level
-configure.ac:122: warning: The macro `AC_TRY_LINK' is obsolete.
-configure.ac:122: You should run autoupdate.
-./lib/autoconf/general.m4:2920: AC_TRY_LINK is expanded from...
-lib/m4sugar/m4sh.m4:692: _AS_IF_ELSE is expanded from...
-lib/m4sugar/m4sh.m4:699: AS_IF is expanded from...
-./lib/autoconf/general.m4:2249: AC_CACHE_VAL is expanded from...
-./lib/autoconf/general.m4:2270: AC_CACHE_CHECK is expanded from...
-configure.ac:122: the top level
-configure.ac:138: warning: The macro `AC_TRY_COMPILE' is obsolete.
-configure.ac:138: You should run autoupdate.
-./lib/autoconf/general.m4:2847: AC_TRY_COMPILE is expanded from...
-lib/m4sugar/m4sh.m4:692: _AS_IF_ELSE is expanded from...
-lib/m4sugar/m4sh.m4:699: AS_IF is expanded from...
-./lib/autoconf/general.m4:2249: AC_CACHE_VAL is expanded from...
-./lib/autoconf/general.m4:2270: AC_CACHE_CHECK is expanded from...
-configure.ac:138: the top level
-configure.ac:185: warning: The macro `AC_TRY_COMPILE' is obsolete.
-configure.ac:185: You should run autoupdate.
-./lib/autoconf/general.m4:2847: AC_TRY_COMPILE is expanded from...
-lib/m4sugar/m4sh.m4:692: _AS_IF_ELSE is expanded from...
-lib/m4sugar/m4sh.m4:699: AS_IF is expanded from...
-./lib/autoconf/general.m4:2249: AC_CACHE_VAL is expanded from...
-./lib/autoconf/general.m4:2270: AC_CACHE_CHECK is expanded from...
-configure.ac:185: the top level
-configure.ac:310: warning: The macro `AC_HELP_STRING' is obsolete.
-configure.ac:310: You should run autoupdate.
-./lib/autoconf/general.m4:204: AC_HELP_STRING is expanded from...
-configure.ac:310: the top level
-configure.ac:418: warning: The macro `AC_HELP_STRING' is obsolete.
-configure.ac:418: You should run autoupdate.
-./lib/autoconf/general.m4:204: AC_HELP_STRING is expanded from...
-acinclude.m4:353: LIBFFI_ENABLE_SYMVERS is expanded from...
-configure.ac:418: the top level
-configure.ac:418: warning: The macro `AC_PROG_LD' is obsolete.
-configure.ac:418: You should run autoupdate.
-m4/libtool.m4:3361: AC_PROG_LD is expanded from...
-acinclude.m4:251: LIBFFI_CHECK_LINKER_FEATURES is expanded from...
-acinclude.m4:353: LIBFFI_ENABLE_SYMVERS is expanded from...
-configure.ac:418: the top level
-configure.ac:418: warning: The macro `AC_TRY_RUN' is obsolete.
-configure.ac:418: You should run autoupdate.
-./lib/autoconf/general.m4:2997: AC_TRY_RUN is expanded from...
-acinclude.m4:251: LIBFFI_CHECK_LINKER_FEATURES is expanded from...
-acinclude.m4:353: LIBFFI_ENABLE_SYMVERS is expanded from...
-configure.ac:418: the top level
-configure.ac:418: warning: The macro `AC_TRY_LINK' is obsolete.
-configure.ac:418: You should run autoupdate.
-./lib/autoconf/general.m4:2920: AC_TRY_LINK is expanded from...
-acinclude.m4:353: LIBFFI_ENABLE_SYMVERS is expanded from...
-configure.ac:418: the top level
-configure.ac:215: error: possibly undefined macro: LT_SYS_SYMBOL_USCORE
-      If this token and others are legitimate, please use m4_pattern_allow.
-      See the Autoconf documentation.
-autoreconf: error: /usr/bin/autoconf failed with exit status: 1
-
+Using pip 26.2.1 from /home/runner/work/MathSnap/MathSnap/.buildozer/android/platform/build-arm64-v8a/build/venv/lib/python3.14/site-packages/pip (python 3.14)
+[31mERROR: charset_normalizer-3.5.2-cp314-cp314-android_24_arm64_v8a.whl is not a supported wheel on this platform.[0m[31m
+[0m
 
   STDERR:
 
@@ -274,11 +274,11 @@ autoreconf: error: /usr/bin/autoconf failed with exit status: 1
 [0m[1;31m#     JAVA_HOME_11_X64 = '/usr/lib/jvm/temurin-11-jdk-amd64'[0m
 [0m[1;31m#     JAVA_HOME_25_X64 = '/usr/lib/jvm/temurin-25-jdk-amd64'[0m
 [0m[1;31m#     PKG_CONFIG_PATH = '/opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig'[0m
-[0m[1;31m#     GITHUB_PATH = '/home/runner/work/_temp/_runner_file_commands/add_path_4d491b50-40ed-4ad8-95b5-65ab04cd7d92'[0m
-[0m[1;31m#     GITHUB_ACTION = '__run_4'[0m
+[0m[1;31m#     GITHUB_PATH = '/home/runner/work/_temp/_runner_file_commands/add_path_8b41189f-933b-480e-9bba-5cdc535be4c8'[0m
+[0m[1;31m#     GITHUB_ACTION = '__run_5'[0m
 [0m[1;31m#     JAVA_HOME = '/usr/lib/jvm/temurin-17-jdk-amd64'[0m
-[0m[1;31m#     GITHUB_RUN_NUMBER = '6'[0m
-[0m[1;31m#     RUNNER_NAME = 'GitHub Actions 1000000179'[0m
+[0m[1;31m#     GITHUB_RUN_NUMBER = '7'[0m
+[0m[1;31m#     RUNNER_NAME = 'GitHub Actions 1000000180'[0m
 [0m[1;31m#     GRADLE_HOME = '/usr/share/gradle-9.8.0'[0m
 [0m[1;31m#     GITHUB_REPOSITORY_OWNER_ID = '188855038'[0m
 [0m[1;31m#     ACTIONS_RUNNER_ACTION_ARCHIVE_CACHE = '/opt/actionarchivecache'[0m
@@ -298,13 +298,13 @@ autoreconf: error: /usr/bin/autoconf failed with exit status: 1
 [0m[1;31m#     PWD = '/home/runner/work/MathSnap/MathSnap'[0m
 [0m[1;31m#     PIPX_BIN_DIR = '/opt/pipx_bin'[0m
 [0m[1;31m#     LOGNAME = 'runner'[0m
-[0m[1;31m#     GITHUB_ARTIFACTS_LIST = '/home/runner/work/_temp/_runner_file_commands/artifacts_list_4d491b50-40ed-4ad8-95b5-65ab04cd7d92'[0m
+[0m[1;31m#     GITHUB_ARTIFACTS_LIST = '/home/runner/work/_temp/_runner_file_commands/artifacts_list_8b41189f-933b-480e-9bba-5cdc535be4c8'[0m
 [0m[1;31m#     GITHUB_REPOSITORY_ID = '1414235653'[0m
 [0m[1;31m#     GITHUB_ACTIONS = 'true'[0m
 [0m[1;31m#     USE_BAZEL_FALLBACK_VERSION = 'silent:'[0m
 [0m[1;31m#     ANDROID_NDK_LATEST_HOME = '/usr/local/lib/android/sdk/ndk/30.0.16248370'[0m
-[0m[1;31m#     SYSTEMD_EXEC_PID = '1878'[0m
-[0m[1;31m#     GITHUB_SHA = '1edf8e4594f0d84420c8d2ae1c4fafdf421064ad'[0m
+[0m[1;31m#     SYSTEMD_EXEC_PID = '2078'[0m
+[0m[1;31m#     GITHUB_SHA = '33625824f1c5786fff7a06c69ccbb111fd392dd6'[0m
 [0m[1;31m#     GITHUB_WORKFLOW_REF = 'Cimoopp/MathSnap/.github/workflows/apk.yml@refs/heads/main'[0m
 [0m[1;31m#     POWERSHELL_DISTRIBUTION_CHANNEL = 'GitHub-Actions-Linux'[0m
 [0m[1;31m#     RUNNER_ENVIRONMENT = 'github-hosted'[0m
@@ -316,21 +316,21 @@ autoreconf: error: /usr/bin/autoconf failed with exit status: 1
 [0m[1;31m#     GITHUB_API_URL = 'https://api.github.com'[0m
 [0m[1;31m#     LANG = 'C.UTF-8'[0m
 [0m[1;31m#     GOROOT_1_25_X64 = '/opt/hostedtoolcache/go/1.25.14/x64'[0m
-[0m[1;31m#     RUNNER_TRACKING_ID = 'github_70fa865d-e847-49c1-950c-d62742c0de2e'[0m
+[0m[1;31m#     RUNNER_TRACKING_ID = 'github_f91d6517-4c4f-4102-ab66-5c15f10d84f8'[0m
 [0m[1;31m#     RUNNER_ARCH = 'X64'[0m
 [0m[1;31m#     MEMORY_PRESSURE_WATCH = '/sys/fs/cgroup/system.slice/hosted-compute-agent.service/memory.pressure'[0m
 [0m[1;31m#     RUNNER_TEMP = '/home/runner/work/_temp'[0m
-[0m[1;31m#     GITHUB_STATE = '/home/runner/work/_temp/_runner_file_commands/save_state_4d491b50-40ed-4ad8-95b5-65ab04cd7d92'[0m
+[0m[1;31m#     GITHUB_STATE = '/home/runner/work/_temp/_runner_file_commands/save_state_8b41189f-933b-480e-9bba-5cdc535be4c8'[0m
 [0m[1;31m#     EDGEWEBDRIVER = '/usr/local/share/edge_driver'[0m
 [0m[1;31m#     JAVA_HOME_21_X64 = '/usr/lib/jvm/temurin-21-jdk-amd64'[0m
-[0m[1;31m#     GITHUB_ENV = '/home/runner/work/_temp/_runner_file_commands/set_env_4d491b50-40ed-4ad8-95b5-65ab04cd7d92'[0m
+[0m[1;31m#     GITHUB_ENV = '/home/runner/work/_temp/_runner_file_commands/set_env_8b41189f-933b-480e-9bba-5cdc535be4c8'[0m
 [0m[1;31m#     GITHUB_EVENT_PATH = '/home/runner/work/_temp/_github_workflow/event.json'[0m
-[0m[1;31m#     INVOCATION_ID = '74193bd009024e6181188d9f6b4f26e1'[0m
+[0m[1;31m#     INVOCATION_ID = '040cc2a49e08470f9358f33cd5c6bd1c'[0m
 [0m[1;31m#     GITHUB_EVENT_NAME = 'push'[0m
-[0m[1;31m#     GITHUB_RUN_ID = '38530950393'[0m
+[0m[1;31m#     GITHUB_RUN_ID = '38542020132'[0m
 [0m[1;31m#     JAVA_HOME_17_X64 = '/usr/lib/jvm/temurin-17-jdk-amd64'[0m
 [0m[1;31m#     ANDROID_NDK_HOME = '/usr/local/lib/android/sdk/ndk/27.3.13750724'[0m
-[0m[1;31m#     GITHUB_STEP_SUMMARY = '/home/runner/work/_temp/_runner_file_commands/step_summary_4d491b50-40ed-4ad8-95b5-65ab04cd7d92'[0m
+[0m[1;31m#     GITHUB_STEP_SUMMARY = '/home/runner/work/_temp/_runner_file_commands/step_summary_8b41189f-933b-480e-9bba-5cdc535be4c8'[0m
 [0m[1;31m#     HOMEBREW_NO_AUTO_UPDATE = '1'[0m
 [0m[1;31m#     GITHUB_ACTOR = 'Cimoopp'[0m
 [0m[1;31m#     NVM_DIR = '/home/runner/.nvm'[0m
@@ -349,13 +349,13 @@ autoreconf: error: /usr/bin/autoconf failed with exit status: 1
 [0m[1;31m#     ANDROID_SDK_ROOT = '/usr/local/lib/android/sdk'[0m
 [0m[1;31m#     VCPKG_INSTALLATION_ROOT = '/usr/local/share/vcpkg'[0m
 [0m[1;31m#     GITHUB_ACTOR_ID = '188855038'[0m
-[0m[1;31m#     ACTIONS_ORCHESTRATION_ID = '54535017-2f39-8b6e-afc7-1c1031a304f0.build.__default'[0m
+[0m[1;31m#     ACTIONS_ORCHESTRATION_ID = '36ba2eb4-7022-85a1-81eb-bc4009199864.build.__default'[0m
 [0m[1;31m#     RUNNER_TOOL_CACHE = '/opt/hostedtoolcache'[0m
 [0m[1;31m#     ImageVersion = '20261004.327.1'[0m
 [0m[1;31m#     Python3_ROOT_DIR = '/opt/hostedtoolcache/Python/3.11.17/x64'[0m
 [0m[1;31m#     DOTNET_NOLOGO = '1'[0m
-[0m[1;31m#     GITHUB_ARTIFACTS = '/home/runner/work/_temp/_runner_file_commands/artifacts_4d491b50-40ed-4ad8-95b5-65ab04cd7d92'[0m
-[0m[1;31m#     GITHUB_WORKFLOW_SHA = '1edf8e4594f0d84420c8d2ae1c4fafdf421064ad'[0m
+[0m[1;31m#     GITHUB_ARTIFACTS = '/home/runner/work/_temp/_runner_file_commands/artifacts_8b41189f-933b-480e-9bba-5cdc535be4c8'[0m
+[0m[1;31m#     GITHUB_WORKFLOW_SHA = '33625824f1c5786fff7a06c69ccbb111fd392dd6'[0m
 [0m[1;31m#     GOROOT_1_24_X64 = '/opt/hostedtoolcache/go/1.24.13/x64'[0m
 [0m[1;31m#     GITHUB_REF_NAME = 'main'[0m
 [0m[1;31m#     GITHUB_JOB = 'build'[0m
@@ -365,10 +365,10 @@ autoreconf: error: /usr/bin/autoconf failed with exit status: 1
 [0m[1;31m#     GOROOT_1_26_X64 = '/opt/hostedtoolcache/go/1.26.8/x64'[0m
 [0m[1;31m#     GITHUB_REPOSITORY = 'Cimoopp/MathSnap'[0m
 [0m[1;31m#     Python2_ROOT_DIR = '/opt/hostedtoolcache/Python/3.11.17/x64'[0m
-[0m[1;31m#     ANDROID_NDK_ROOT = '/usr/local/lib/android/sdk/ndk/27.3.13750724'[0m
 [0m[1;31m#     CHROME_BIN = '/usr/bin/google-chrome'[0m
+[0m[1;31m#     ANDROID_NDK_ROOT = '/usr/local/lib/android/sdk/ndk/27.3.13750724'[0m
 [0m[1;31m#     GITHUB_RETENTION_DAYS = '90'[0m
-[0m[1;31m#     JOURNAL_STREAM = '9:11048'[0m
+[0m[1;31m#     JOURNAL_STREAM = '9:12685'[0m
 [0m[1;31m#     RUNNER_WORKSPACE = '/home/runner/work/MathSnap'[0m
 [0m[1;31m#     GITHUB_ACTION_REPOSITORY = ''[0m
 [0m[1;31m#     HCA_CLOUD_PROVIDER = 'azure'[0m
@@ -384,7 +384,7 @@ autoreconf: error: /usr/bin/autoconf failed with exit status: 1
 [0m[1;31m#     ENABLE_RUNNER_TRACING = 'true'[0m
 [0m[1;31m#     GITHUB_WORKFLOW = 'Build APK'[0m
 [0m[1;31m#     DEBIAN_FRONTEND = 'noninteractive'[0m
-[0m[1;31m#     GITHUB_OUTPUT = '/home/runner/work/_temp/_runner_file_commands/set_output_4d491b50-40ed-4ad8-95b5-65ab04cd7d92'[0m
+[0m[1;31m#     GITHUB_OUTPUT = '/home/runner/work/_temp/_runner_file_commands/set_output_8b41189f-933b-480e-9bba-5cdc535be4c8'[0m
 [0m[1;31m#     AGENT_TOOLSDIRECTORY = '/opt/hostedtoolcache'[0m
 [0m[1;31m#     _ = '/opt/hostedtoolcache/Python/3.11.17/x64/bin/buildozer'[0m
 [0m[1;31m#     PACKAGES_PATH = '/home/runner/.buildozer/android/packages'[0m
