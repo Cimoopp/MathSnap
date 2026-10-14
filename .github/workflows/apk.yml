@@ -30,21 +30,36 @@ jobs:
         with:
           python-version: "3.11"
 
+      # libltdl-dev обязателен: именно он приносит файл ltdl.m4,
+      # в котором определён макрос LT_SYS_SYMBOL_USCORE. Без него
+      # рецепт libffi падает на autogen.sh — это и валило сборку:
+      #   configure.ac:215: error: possibly undefined macro: LT_SYS_SYMBOL_USCORE
+      # Список пакетов сверен с требованиями python-for-android.
       - name: Системные пакеты для p4a
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             git zip unzip openjdk-17-jdk \
-            autoconf automake libtool libtool-bin pkg-config \
+            autoconf automake libtool libtool-bin libltdl-dev pkg-config \
             gettext autopoint liblzma-dev libbz2-dev patch ccache \
             zlib1g-dev libncurses5-dev libncursesw5-dev \
             cmake libffi-dev libssl-dev
-          echo "--- инструменты автосборки ---"
+
+      # Проверяем окружение автосборки ДО сборки: если макрос не найден,
+      # прогон падает здесь за 20 секунд, а не через 5 минут внутри p4a.
+      - name: Проверка инструментов автосборки
+        run: |
+          echo "--- версии ---"
           autoconf --version | head -n 1
           automake --version | head -n 1
           autopoint --version | head -n 1
           libtool --version | head -n 1
           java -version 2>&1 | head -n 1
+          echo "--- ltdl.m4 (от libltdl-dev) ---"
+          ls -l /usr/share/aclocal/ltdl.m4 2>/dev/null || echo "НЕТ ltdl.m4"
+          echo "--- где живёт макрос LT_SYS_SYMBOL_USCORE ---"
+          grep -rl "LT_SYS_SYMBOL_USCORE" /usr/share/aclocal/ 2>/dev/null \
+            || { echo "МАКРОС НЕ НАЙДЕН — рецепт libffi упадёт"; exit 1; }
 
       - name: Кэш buildozer, gradle и NDK
         uses: actions/cache@v4
@@ -113,7 +128,7 @@ jobs:
       - name: Поиск ошибок в логе
         if: always()
         run: |
-          grep -n -i -E "autoreconf|autopoint|no valid recipe|does not exist|command failed|traceback|ModuleNotFoundError|not found|unsupported|error:|fatal|sdkmanager|licence|license" build.log \
+          grep -n -i -E "autoreconf|autopoint|possible undefined|LT_SYS_SYMBOL|no valid recipe|does not exist|command failed|traceback|ModuleNotFoundError|not found|unsupported|error:|fatal|sdkmanager|licence|license" build.log \
             | head -n 160 || true
 
       # ГЛАВНОЕ ДЛЯ ОТЛАДКИ: хвост лога уходит в репозиторий,
