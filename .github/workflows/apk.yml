@@ -31,7 +31,6 @@ jobs:
       # на шестой минуте с "autoreconf: error: autopoint failed with exit
       # status: 2" — при этом сам buildozer печатает только общее
       # "failed to execute the last command", и причина не видна.
-      # libtool-bin тоже нужен: libtool без него не находит часть макросов.
       - name: Системные пакеты для p4a
         run: |
           sudo apt-get update
@@ -46,6 +45,7 @@ jobs:
           automake --version | head -n 1
           autopoint --version | head -n 1
           libtool --version | head -n 1
+          java -version 2>&1 | head -n 1
 
       - name: Кэш buildozer, gradle и NDK
         uses: actions/cache@v4
@@ -57,8 +57,6 @@ jobs:
           key: buildozer-${{ hashFiles('buildozer.spec') }}
 
       # Cython 3 ломает рецепты p4a — только ветка ниже 3.
-      # buildozer 1.5.0 последний стабильный и совместим с p4a, который
-      # он подтягивает сам.
       - name: Установка buildozer
         run: |
           pip install --upgrade pip
@@ -76,39 +74,56 @@ jobs:
           echo "--- assets ---"
           ls -la assets/ || true
 
-      # Без pipefail: раньше `set -o pipefail` вместе с `yes |` давал
-      # "yes: Broken pipe" и перекрывал настоящую ошибку сборки.
+      # ГЛАВНАЯ ПРАВКА.
+      # Раньше здесь стояло `printf 'y...' | buildozer android debug 2>&1
+      # | tee build.log`. Кода возврата у шага при этом не было от
+      # buildozer: в цепочке без `pipefail` берётся код последней команды,
+      # то есть tee — а он всегда 0. Из-за этого падение buildozer
+      # выглядело как успешная сборка (зелёная галочка, 5 минут), а
+      # отсутствие APK ловил уже следующий шаг, без причины в логе.
+      # Теперь вывод идёт в файл, код берётся у самой buildozer, и хвост
+      # лога печатается прямо здесь — причина видна сразу в этом шаге.
       - name: Сборка APK
         run: |
-          printf 'y\ny\ny\ny\ny\n' | buildozer android debug 2>&1 | tee build.log
-          echo "код выхода buildozer: ${PIPESTATUS[1]}"
+          buildozer -v android debug > build.log 2>&1
+          code=$?
+          echo "=== код выхода buildozer: $code ==="
+          echo "=== последние 250 строк build.log ==="
+          tail -n 250 build.log
+          exit $code
+
+      - name: Что вообще собралось
+        if: always()
+        run: |
+          echo "--- bin/ ---"
+          ls -la bin/ || true
+          echo "--- apk вне .buildozer ---"
+          find . -name '*.apk' -not -path './.buildozer/*' || true
+          echo "--- apk внутри .buildozer ---"
+          find .buildozer -name '*.apk' 2>/dev/null | head -n 20 || true
 
       - name: Проверка, что APK появился
         run: |
-          ls -la bin/ || true
           if ! ls bin/*.apk >/dev/null 2>&1; then
-            echo "APK не собрался — причина ниже, в хвосте лога."
+            echo "APK не собрался. Причина — в шаге «Сборка APK» выше."
             exit 1
           fi
           ls -la bin/*.apk
 
-      # Хвост печатается ВСЕГДА: если падает предыдущий шаг проверки,
-      # сам лог к этому моменту уже не напечататься не успеет.
       - name: Хвост лога сборки
         if: always()
         run: |
           echo "=== последние 300 строк build.log ==="
           tail -n 300 build.log || echo "build.log не найден"
 
-      # Отдельно вытаскиваем строки с настоящими ошибками — так причина
-      # видна сразу, без чтения всего лога. autoreconf и autopoint здесь
-      # на первом месте не случайно: это самая частая причина падений p4a.
+      # Ищем строки, по которым причина читается сразу. Первыми — рецепты
+      # p4a: отсутствующее требование и падение autoreconf дают разный
+      # текст, и оба видны здесь.
       - name: Поиск ошибок в логе
         if: always()
         run: |
-          echo "=== строки с ошибками ==="
-          grep -n -i -E "autoreconf|autopoint|error|traceback|no valid recipe|command failed|not found|unsupported" build.log \
-            | grep -v -i "error_|no errors|errorhandler" | head -n 100 || true
+          grep -n -i -E "autoreconf|autopoint|no valid recipe|does not exist|command failed|traceback|ModuleNotFoundError|not found|unsupported|sdkmanager|licence|license" build.log \
+            | head -n 120 || true
 
       - name: Лог сборки в артефакт
         if: always()
