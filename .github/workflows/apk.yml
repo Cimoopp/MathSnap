@@ -11,6 +11,11 @@ on:
       - ".github/workflows/apk.yml"
   workflow_dispatch:
 
+# Нужно, чтобы шаг диагностики мог закоммитить хвост лога сборки:
+# тогда причину падения видно прямо в репозитории, не открывая прогон.
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,12 +30,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      # ВАЖНО про gettext и autopoint.
-      # Рецепты p4a (liblzma и другие) прогоняют autoreconf, а тот зовёт
-      # autopoint. Без пакетов gettext и autopoint сборка падает примерно
-      # на шестой минуте с "autoreconf: error: autopoint failed with exit
-      # status: 2" — при этом сам buildozer печатает только общее
-      # "failed to execute the last command", и причина не видна.
       - name: Системные пакеты для p4a
         run: |
           sudo apt-get update
@@ -74,15 +73,8 @@ jobs:
           echo "--- assets ---"
           ls -la assets/ || true
 
-      # ГЛАВНАЯ ПРАВКА.
-      # Раньше здесь стояло `printf 'y...' | buildozer android debug 2>&1
-      # | tee build.log`. Кода возврата у шага при этом не было от
-      # buildozer: в цепочке без `pipefail` берётся код последней команды,
-      # то есть tee — а он всегда 0. Из-за этого падение buildozer
-      # выглядело как успешная сборка (зелёная галочка, 5 минут), а
-      # отсутствие APK ловил уже следующий шаг, без причины в логе.
-      # Теперь вывод идёт в файл, код берётся у самой buildozer, и хвост
-      # лога печатается прямо здесь — причина видна сразу в этом шаге.
+      # Код возврата берётся у самой buildozer, а не у tee: иначе падение
+      # выглядит как успешная сборка. Хвост лога печатается здесь же.
       - name: Сборка APK
         run: |
           buildozer -v android debug > build.log 2>&1
@@ -116,14 +108,30 @@ jobs:
           echo "=== последние 300 строк build.log ==="
           tail -n 300 build.log || echo "build.log не найден"
 
-      # Ищем строки, по которым причина читается сразу. Первыми — рецепты
-      # p4a: отсутствующее требование и падение autoreconf дают разный
-      # текст, и оба видны здесь.
+      # Ищем строки, по которым причина читается сразу: рецепты p4a,
+      # autoreconf, отсутствующие пакеты, падения компиляции.
       - name: Поиск ошибок в логе
         if: always()
         run: |
-          grep -n -i -E "autoreconf|autopoint|no valid recipe|does not exist|command failed|traceback|ModuleNotFoundError|not found|unsupported|sdkmanager|licence|license" build.log \
-            | head -n 120 || true
+          grep -n -i -E "autoreconf|autopoint|no valid recipe|does not exist|command failed|traceback|ModuleNotFoundError|not found|unsupported|error:|fatal|sdkmanager|licence|license" build.log \
+            | head -n 160 || true
+
+      # ГЛАВНОЕ ДЛЯ ОТЛАДКИ: хвост лога уходит в репозиторий,
+      # поэтому причину падения видно без скачивания артефактов.
+      # Путь diagnostics/** не входит в paths триггера выше, так что
+      # этот коммит не запускает сборку заново.
+      - name: Лог сборки в репозиторий
+        if: always()
+        run: |
+          mkdir -p diagnostics
+          tail -n 400 build.log > diagnostics/build-log.txt 2>/dev/null \
+            || echo "build.log не найден — сборка не дошла до запуска buildozer" > diagnostics/build-log.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add diagnostics/build-log.txt
+          git commit -m "chore: лог сборки APK [skip ci]" || echo "нечего коммитить"
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+          git push || echo "push не удался: включи Settings → Actions → General → Workflow permissions → Read and write"
 
       - name: Лог сборки в артефакт
         if: always()
